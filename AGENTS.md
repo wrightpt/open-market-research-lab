@@ -68,7 +68,7 @@ Report the files changed, exact validation results, and material limitations.
 ## Developer portal work
 
 Read docs/DEVELOPER_PORTAL.md and docs/PORTAL_CONTRACT.md. Review the current
-contract before integration; proposed nested envelopes are not backend guarantees.
+contract before integration; parent-confirmed envelopes still need end-to-end tests.
 The UI never grants access. Backend authorization, CSRF, OAuth, key custody,
 rate limits, and dataset policy are separate responsibilities. Never implement
 credential persistence in browser storage or put secrets in prompts/config commits.
@@ -79,3 +79,10 @@ An explicitly authorized isolated feature branch may receive reviewed local
 commits and PRs. Follow the session's push restriction; authorization to develop
 or commit is not authorization to push, merge, deploy, or activate an endpoint.
 Do not launch agents or create another task ledger without explicit coordination.
+
+The optional `omr_mcp` module alone may send the seven fixed research POST calls to
+an explicitly approved HTTPS origin using environment configuration. Test it only
+against generated loopback TLS fixtures in ordinary development. No environment
+inspection, production key retrieval, arbitrary URLs, HTTP downgrade, proxy,
+redirect, database, Kubernetes or Vault access is needed. Read docs/AGENT_SETUP.md
+and docs/MCP_ADAPTER.md. The benchmark's no-network rule remains unchanged.

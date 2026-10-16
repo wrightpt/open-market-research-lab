@@ -5,6 +5,22 @@ export function accountState(session) {
   return ["none", "pending", "denied", "approved"].includes(status) ? status : "unavailable";
 }
 
+export function validKeyName(value) {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= 64 && /^[\x20-\x7E]+$/.test(value);
+}
+
+export function modeView(mode) {
+  if (mode === "demo") return {demo: true, test: false, login: true,
+    connection: "Connected to loopback mock responses. No production service or OAuth connection.",
+    availability: "The original synthetic benchmark and its source. This standalone loopback demo uses mock accounts, keys, and quotas; it does not serve the research API."};
+  if (mode === "synthetic-test") return {demo: false, test: true, login: false,
+    connection: "Connected to a SYNTHETIC-TEST backend. Account and key operations are a prototype; live GitHub sign-in is not configured here.",
+    availability: "This synthetic-test API catalog is distinct from the offline toy benchmark. All asset series are invented fixtures. No real data or production OAuth readiness is claimed."};
+  return {demo: false, test: false, login: mode === "production",
+    connection: "Connected to the same-origin portal. Backend approval and dataset policy remain authoritative.",
+    availability: "The portal displays synthetic datasets only. Inspect each dataset's identity, time basis, and coverage. Backend access approval does not admit real data."};
+}
+
 export function datasetRecords(value) {
   if (!Array.isArray(value?.datasets)) throw new Error("Invalid catalog");
   return value.datasets.filter(item => item && item.synthetic === true &&

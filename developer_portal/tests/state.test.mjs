@@ -1,6 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {accountState, datasetRecords, usageView, apiClient} from "../static/state.mjs";
+import {accountState, datasetRecords, usageView, apiClient, validKeyName, modeView} from "../static/state.mjs";
+
+test("key names match the 64 printable ASCII character contract", () => {
+  for (const value of ["a", "a".repeat(64), "local review"]) assert.equal(validKeyName(value), true);
+  for (const value of ["", " ", "a".repeat(65), "clé", "name\n", null]) assert.equal(validKeyName(value), false);
+});
+test("synthetic-test has no demo selector or live GitHub claim", () => {
+  const value = modeView("synthetic-test");
+  assert.equal(value.demo, false); assert.equal(value.test, true); assert.equal(value.login, false);
+  assert.match(value.connection, /SYNTHETIC-TEST/);
+  assert.match(value.availability, /distinct from the offline toy benchmark/);
+  assert.equal(modeView("demo").demo, true);
+  assert.equal(modeView("production").login, true);
+  assert.equal(modeView("unknown").login, false);
+});
 
 test("account states fail closed and distinguish authentication from approval", () => {
   assert.equal(accountState(null), "unavailable");

@@ -83,10 +83,21 @@ class PortalTests(unittest.TestCase):
         self.assertEqual(self.request("/portal/api/session")[0], 200)
         self.assertEqual(self.mutation("/portal/demo/scenario", {"scenario": "x" * 5000})[0], 413)
 
+    def test_key_names_and_per_minute_quota_match_public_contract(self):
+        self.mutation("/portal/demo/scenario", {"scenario": "approved"})
+        body = {"scopes": ["research:read"], "expires_in_days": 30}
+        for name in ("", " ", "x" * 65, "clé", "name\n"):
+            self.assertEqual(self.mutation("/portal/api/keys", {**body, "name": name})[0], 400)
+        for name in ("a", "x" * 64):
+            self.assertEqual(self.mutation("/portal/api/keys", {**body, "name": name})[0], 201)
+        self.assertIn("requests_per_minute", json.loads(self.request("/portal/api/usage")[2])["limits"])
+
     def test_catalog_matches_public_fixture_identity(self):
         dataset = datasets()[0]
         self.assertTrue(dataset["synthetic"])
         self.assertEqual(len(dataset["fields"]), 10)
+        self.assertEqual(dataset["schema_version"], 1)
+        self.assertIn("bar close", dataset["time_basis"])
         metadata = expected_manifest()
         for coverage in dataset["coverage"]:
             self.assertEqual(coverage["sha256"], metadata["splits"][coverage["split"]]["sha256"])

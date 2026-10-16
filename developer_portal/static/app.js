@@ -1,4 +1,4 @@
-import {accountState, datasetRecords, usageView, apiClient} from "./state.mjs";
+import {accountState, datasetRecords, usageView, apiClient, validKeyName, modeView} from "./state.mjs";
 
 const $ = id => document.getElementById(id);
 let session = null, catalog = [], generation = 0, busy = false;
@@ -28,8 +28,9 @@ function route() {
 }
 function renderAccount() {
   const status = accountState(session);
+  const mode = modeView(session?.mode);
   const messages = {
-    anonymous: "Sign in to request access. The offline synthetic benchmark needs no account.",
+    anonymous: mode.test ? "Synthetic-test account/key prototype. Live GitHub sign-in is not configured here." : "Sign in to request access. The offline synthetic benchmark needs no account.",
     none: "Signed in. Research access has not been requested.",
     pending: "Access request pending. Keys and research access remain unavailable until the backend approves it.",
     denied: "Access request denied. No research access or key creation is available. Contact the maintainer through the approved review channel.",
@@ -37,11 +38,14 @@ function renderAccount() {
     unavailable: "Account state unavailable. No privileged action is enabled. Refresh status to retry.",
   };
   write("account-status", `${session?.user?.login ? `${session.user.login} · ` : ""}${messages[status]}`);
-  $("github-login").hidden = status !== "anonymous";
+  $("github-login").hidden = status !== "anonymous" || !mode.login;
   $("logout").hidden = !session?.authenticated;
   $("request-form").hidden = status !== "none";
   $("approved-panel").hidden = status !== "approved";
-  $("demo-banner").hidden = session?.mode !== "demo";
+  $("demo-banner").hidden = !mode.demo;
+  $("test-banner").hidden = !mode.test;
+  write("availability-detail", mode.availability);
+  write("api-mode-status", mode.demo ? "The standalone loopback demo mocks portal operations; it does not serve the research API. The API examples refer to a separate synthetic backend." : "The research tools use the agreed synthetic API contract. Configure an approved HTTPS origin privately for the adapter. No production origin or credential is embedded in this UI.");
   if (session?.mode === "demo") {
     if (["none", "pending", "denied", "approved"].includes(status)) $("demo-scenario").value = status === "none" ? "unrequested" : status;
     else if (status === "anonymous" && !["loading", "failure"].includes($("demo-scenario").value)) $("demo-scenario").value = "anonymous";
@@ -62,9 +66,10 @@ function table(headers, rows) {
 function detail(item) {
   $("dataset-detail").hidden = false;
   write("dataset-title", item.title); write("dataset-description", item.description);
+  write("dataset-time-basis", item.time_basis ?? "Time basis unavailable. Do not assume bar-close or bucket timing; consult the dataset schema.");
   $("dataset-facts").replaceChildren();
   for (const [name, value] of Object.entries({Asset: item.asset, Venue: item.venue, Granularity: item.granularity,
-    Freshness: item.freshness, Retention: item.retention, Provenance: item.provenance, License: item.license, Gaps: item.gaps})) {
+    "Schema version": item.schema_version, Freshness: item.freshness, Retention: item.retention, Provenance: item.provenance, License: item.license, Gaps: item.gaps})) {
     const pair = element("div"); pair.append(element("dt", name), element("dd", value ?? "Unknown")); $("dataset-facts").append(pair);
   }
   $("dataset-coverage").replaceChildren(table(["Split", "UTC coverage", "Rows", "SHA-256"], item.coverage.map(c => [c.split, `${c.start} → ${c.end}`, c.rows, c.sha256])));
@@ -118,6 +123,7 @@ async function loadKeys(ticket = generation) {
         await mutate(async () => {
           const result = await api(`/keys/${encodeURIComponent(key.id)}${action === "rotate" ? "/rotate" : ""}`, action === "rotate" ? "POST" : "DELETE", action === "rotate" ? {} : undefined);
           if (action === "rotate") reveal(result);
+          else if (result.revoked !== true) throw new Error("Invalid revocation response");
           await loadKeys().catch(error => write("key-status", message(error)));
         });
       }); row.append(button);
@@ -129,7 +135,7 @@ function reveal(result) {
   if (document.hidden || $("account").hidden || accountState(session) !== "approved") return;
   if (typeof result.secret !== "string" || !result.secret.length || result.secret.length > 4096) throw new Error("Invalid secret envelope");
   write("secret-value", result.secret); write("copy-status", "");
-  write("secret-kind", session?.mode === "demo" ? "MOCK KEY · intentionally unusable for any API." : "Store in your local secret manager or protected environment.");
+  write("secret-kind", session?.mode === "demo" ? "MOCK KEY · intentionally unusable for any API." : session?.mode === "synthetic-test" ? "SYNTHETIC-TEST KEY · store securely and use only with the approved synthetic backend." : "Store in your local secret manager or protected environment.");
   $("secret-dialog").showModal();
 }
 async function refreshUsage(ticket) {
@@ -137,7 +143,7 @@ async function refreshUsage(ticket) {
   const result = await api("/usage"); if (ticket !== generation) return;
   const view = usageView(result); if (!view) throw new Error("Invalid usage");
   write("usage-label", `${view.used} / ${view.limit} requests`); $("usage-meter").value = view.percent; $("usage-meter").hidden = false;
-  write("usage-detail", `${session?.mode === "demo" ? "MOCK QUOTA · " : ""}${result.usage.rows_today ?? "Unknown"} rows today. ${result.limits.rows_per_request ?? "Unknown"} rows per request. Resets ${result.usage.resets_at ?? "unknown"}.`);
+  write("usage-detail", `${session?.mode === "demo" ? "MOCK QUOTA · " : ""}${result.usage.rows_today ?? "Unknown"} rows today. ${result.limits.rows_per_request ?? "Unknown"} rows per request. ${result.limits.requests_per_minute ?? "Unknown"} requests per minute. Resets ${result.usage.resets_at ?? "unknown"}.`);
 }
 async function refresh() {
   const ticket = ++generation; clearSecret(); session = null; renderAccount();
@@ -146,7 +152,7 @@ async function refresh() {
   try {
     const response = await api("/session"); if (ticket !== generation) return;
     session = response;
-    renderAccount(); write("connection", session.mode === "demo" ? "Connected to loopback mock responses. No production service or OAuth connection." : "Connected to portal. Backend approval and dataset policy remain authoritative.");
+    renderAccount(); write("connection", modeView(session.mode).connection);
   } catch (error) { if (ticket === generation) { session = null; renderAccount(); write("connection", message(error)); } }
   if (ticket !== generation) return;
   const jobs = [refreshCatalog(ticket)];
@@ -165,10 +171,12 @@ async function mutate(callback) {
 }
 $("request-form").addEventListener("submit", event => { event.preventDefault(); mutate(async () => { await api("/access-requests", "POST", {purpose: $("purpose").value}); $("purpose").value = ""; await refresh(); }); });
 $("key-form").addEventListener("submit", event => { event.preventDefault(); mutate(async () => {
+  if (!validKeyName($("key-name").value)) throw new Error("Invalid key name");
   const result = await api("/keys", "POST", {name: $("key-name").value.trim(), scopes: ["research:read"], expires_in_days: 30});
   $("key-name").value = ""; reveal(result);
   await loadKeys().catch(error => write("key-status", message(error)));
 }); });
+$("key-name").addEventListener("input", () => $("key-name").setCustomValidity(validKeyName($("key-name").value) ? "" : "Use 1–64 printable ASCII characters, including a non-space character."));
 $("logout").addEventListener("click", () => mutate(async () => { await api("/logout", "POST", {}); await refresh(); }));
 $("refresh-account").addEventListener("click", refresh);
 $("reload-datasets").addEventListener("click", () => refreshCatalog());
