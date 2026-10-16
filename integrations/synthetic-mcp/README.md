@@ -45,25 +45,41 @@ are rejected by strict Zod schemas.
 
 ## How to test it in ChatGPT Work later
 
-A browser-hosted ChatGPT session cannot connect directly to your workstation's
-`127.0.0.1` address. When **separate authorization** approves a dedicated,
-isolated public HTTPS deployment of this synthetic-only server, follow the
-official ChatGPT plugin quickstart:
+ChatGPT running in the cloud cannot connect directly to the workstation's
+`127.0.0.1` address. **For a private test, prefer OpenAI Secure MCP Tunnel**
+(https://developers.openai.com/api/docs/guides/secure-mcp-tunnels). It routes
+MCP requests outbound through OpenAI without opening public inbound ports.
 
-1. Go to ChatGPT **Plugins** and select **Add custom MCP server**.
-2. Give the connection a recognizable name and provide the *verified*
-   HTTPS endpoint ending in `/mcp`.
-3. Select **No authentication** only for the explicitly public synthetic
-   demo. Restricted datasets must instead use reviewed OAuth.
-4. Review the requested connection, create the private plugin, and install it.
-5. In a new ChatGPT **Work** chat, select the plugin with `@` and ask:
+After approving the limited synthetic-only scope:
+
+1. Create a **dedicated test tunnel** in OpenAI Platform tunnel settings and
+   associate it with the ChatGPT workspace intended to use the plugin. Ensure
+   the operator has Tunnels Read + Use and the creator Tunnels Manage.
+2. Start this server locally (`npm start`). Have the operator configure
+   `tunnel-client` to forward only to `http://127.0.0.1:8787/mcp`. Provide
+   the restricted runtime API key through a secure local credential mechanism;
+   never paste it into chat, a command argument, Git, or output logs.
+3. Run `tunnel-client doctor --profile <chosen-profile> --explain`, then
+   `tunnel-client run --profile <chosen-profile>`. Do not claim it is connected
+   until readiness and active polling are verified.
+4. Go to ChatGPT **Plugins → Add custom MCP server → Connection: Tunnel**,
+   select the intended tunnel, choose an appropriate auth mode for this
+   *synthetic-only* demonstration, review the tools, and install the resulting
+   **private** plugin.
+5. In a new ChatGPT **Work** chat, select the plugin using `@` and ask:
    - "List your available research datasets."
    - "Describe the synthetic liquidity benchmark fields."
    - "Return ten development observations and their SHA-256 provenance."
+6. Stop the tunnel client and local server when testing is complete.
 
-A public directory submission requires a separate identity, security, policy
-and usability review. This proof of concept does not create or publish a
-ChatGPT plugin, and a hosted endpoint has **not** been set up.
+Alternatively, a separately reviewed, isolated **public HTTPS** synthetic MCP
+endpoint can be used instead of the private tunnel. A stable public HTTPS
+endpoint is **required for public plugin-directory submission**; Secure MCP
+Tunnel is intended for private testing only. Real datasets require per-user
+authorization and reviewed OAuth before exposure.
+
+This proof of concept has **not** created a ChatGPT plugin, opened a tunnel,
+used API credentials, or deployed a public endpoint.
 
 ## Security design
 

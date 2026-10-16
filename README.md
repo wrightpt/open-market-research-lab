@@ -21,7 +21,8 @@ demonstrates three research tools: `list_datasets`, `describe_dataset`, and
 `get_sample`. It binds to `127.0.0.1`, uses verified synthetic development
 fixtures, and is **not internet-hosted or connected to ChatGPT yet**.
 
-ChatGPT Work needs a separately reviewed HTTPS endpoint before it can connect.
+ChatGPT Work needs either a reviewed **Secure MCP Tunnel** for private
+plugin testing or an approved public HTTPS endpoint for broader distribution.
 This prototype includes no real-market data or private infrastructure access.
 
 ## Human quickstart
