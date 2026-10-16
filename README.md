@@ -97,11 +97,14 @@ strategy outcomes. Read [DATA_POLICY.md](DATA_POLICY.md) before any holdout work
 | `docs/ARCHITECTURE.md` | Formulas, data flow, trust boundaries, and design choices |
 | `docs/RELEASE_GATES.md` | Local engineering acceptance and separately authorized future gates |
 | `docs/LOCAL_VALIDATION.md` | Actual local test results and retained artifact identities |
-| `.github/` | PR template and dormant hosted-runner CI configuration |
+| `.github/` | PR/issue templates and GitHub-hosted Python 3.11/3.14 CI |
 | `outreach/` | Unpublished benchmark/code-review draft and forum launch gates |
 
 [SECURITY.md](SECURITY.md) defines the threat model. Source code and original
 synthetic fixtures are offered under the [Apache License 2.0](LICENSE), which
 permits commercial reuse of these files. It does **not** license external market
 data, internal trading strategies, private Kubernetes systems, or API access.
-See [release preparation](docs/PUBLIC_RELEASE.md) for publication requirements.
+See [public release status](docs/PUBLIC_RELEASE.md) and the
+[reproducibility review challenge](https://github.com/wrightpt/open-market-research-lab/issues/1).
+PRs are welcome for focused fixes with synthetic evidence; the v1 JSON schema
+currently admits only its built-in research rule, not arbitrary executable strategies.

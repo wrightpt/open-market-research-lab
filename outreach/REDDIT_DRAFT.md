@@ -1,9 +1,9 @@
 # Reddit draft — unpublished
 
-Status: technical review copy only. No forum post or account action is authorized
-by this draft. The reproducible benchmark is a local release candidate; its source
-and synthetic fixtures are Apache-2.0 licensed. Insert a public link only once
-GitHub publication is independently verified. There is no placeholder URL.
+Status: **unpublished forum draft**. No Reddit post or forum account action has
+occurred. The synthetic benchmark is now public and Apache-2.0 licensed at
+https://github.com/wrightpt/open-market-research-lab; its source and test run are
+available for independent reproduction.
 
 For r/algotrading, the known moderator rule prohibits simply asking
 others to share strategies. This draft presents an implementation and specific
@@ -53,6 +53,8 @@ There is also a freeze receipt and one-attempt holdout exercise. Both synthetic
 files and the generator are visible, so this is a custody/workflow demonstration,
 not a blind statistical test. The local guard cannot stop someone with filesystem
 access from tampering with it.
+
+Public source: https://github.com/wrightpt/open-market-research-lab
 
 The requested feedback is code review and reproducibility critique: can you
 reproduce the fixture hashes and reports; find a future-data leak, cost
