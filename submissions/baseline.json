@@ -1,0 +1,46 @@
+{
+  "budget": {
+    "max_bars": 1000,
+    "parameter_sets": 1
+  },
+  "dataset": {
+    "development_sha256": "2f09fc34b9c7124b4d3bcdb93b8227c6c3a451b1c10d544016860d174fa6d544",
+    "holdout_sha256": "b61c68b8ede9acf14593966cfb7a39d8306810919567cb72449801be1c7f1587",
+    "id": "synthetic-liquidity-v1"
+  },
+  "evaluation": {
+    "drawdown_fraction": 0.03,
+    "horizon_bars": 12,
+    "sampling": "non_overlapping_horizons"
+  },
+  "execution": {
+    "fee_bps": 5,
+    "initial_cash": 10000,
+    "position": "long_or_cash",
+    "slippage_bps": 3,
+    "terminal_exit": "last_close_with_costs",
+    "timing": "next_open"
+  },
+  "hypothesis": "A fixed rule combining widening spreads, declining depth, and falling open interest can exercise pre-drawdown alert evaluation on scripted synthetic scenarios. This is an engineering hypothesis only.",
+  "research": {
+    "acceptance_criteria": "Accept engineering behavior only if fixture hashes match, future changes leave prior decisions unchanged, next-open fills reconcile costs, and incomplete outcomes remain unknown. No performance threshold selects this example.",
+    "development_trials": 1,
+    "evidence_level": "synthetic_engineering_only",
+    "holdout_rule": "freeze_then_one_pass_no_retuning",
+    "limitations": "Scripted public fixtures are not markets or a genuinely blind holdout. No fill probability, impact, funding, borrow, venue, or predictive validity is modeled. Always-long and always-cash controls are illustrative.",
+    "prior_work": "Initial standalone example; no private code, market data, or outside research results used."
+  },
+  "schema_version": 1,
+  "strategy": {
+    "name": "liquidity_guard_v1",
+    "parameters": {
+      "depth_ratio_max": 0.6,
+      "lookback_bars": 12,
+      "min_signals": 2,
+      "oi_drop_min": 0.08,
+      "spread_ratio_min": 1.8
+    }
+  },
+  "submission_id": "baseline-liquidity-guard-v1",
+  "title": "Synthetic liquidity deterioration and deleveraging mechanics"
+}

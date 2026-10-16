@@ -1,0 +1,31 @@
+{
+  "dataset_id": "synthetic-liquidity-v1",
+  "embargo_bars": 24,
+  "generator": "market_lab.fixtures:v1:integer-lcg",
+  "instrument": "SYNTHETIC:TOY-USD",
+  "interval_seconds": 3600,
+  "schema_version": 1,
+  "splits": {
+    "development": {
+      "file": "data/synthetic-v1/development.csv",
+      "first_close": "2024-01-01T01:00:00Z",
+      "last_close": "2024-01-17T00:00:00Z",
+      "rows": 384,
+      "scenario_offset": 0,
+      "seed": 20261015,
+      "sha256": "2f09fc34b9c7124b4d3bcdb93b8227c6c3a451b1c10d544016860d174fa6d544"
+    },
+    "holdout": {
+      "file": "data/synthetic-v1/holdout.csv",
+      "first_close": "2024-01-18T01:00:00Z",
+      "last_close": "2024-01-26T00:00:00Z",
+      "rows": 192,
+      "scenario_offset": 1,
+      "seed": 73421,
+      "sha256": "b61c68b8ede9acf14593966cfb7a39d8306810919567cb72449801be1c7f1587"
+    }
+  },
+  "synthetic": true,
+  "timestamp_semantics": "bar close UTC; all fields available at close",
+  "venue": "NONE"
+}
