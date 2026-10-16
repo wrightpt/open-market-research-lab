@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An open, reproducible quantitative research lab. Explore synthetic market datasets, verify causal strategies, and contribute through GitHub.">
+  <meta name="theme-color" content="#08111b">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Open Market Research Lab — Reproducible by design</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a class="brand" href="#home" aria-label="Open Market Research Lab home">
+        <span class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span>OPEN MARKET <strong>LAB</strong></span>
+      </a>
+      <nav class="top-nav" aria-label="Primary">
+        <a href="#datasets">Datasets</a>
+        <a href="#workflow">Research workflow</a>
+        <a href="#agents">Agent setup</a>
+        <a href="#roadmap">API roadmap</a>
+      </nav>
+      <a class="nav-github" href="https://github.com/wrightpt/open-market-research-lab" target="_blank" rel="noopener noreferrer">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 .8A11.2 11.2 0 0 0 8.46 22.62c.56.1.77-.24.77-.54v-1.9c-3.14.69-3.8-1.34-3.8-1.34-.5-1.3-1.23-1.64-1.23-1.64-1.02-.7.08-.69.08-.69 1.12.08 1.7 1.15 1.7 1.15 1 .1.66 1.93 2.96 1.36.1-.72.39-1.22.71-1.5-2.5-.28-5.13-1.25-5.13-5.56 0-1.23.44-2.23 1.15-3.01-.12-.28-.5-1.42.11-2.96 0 0 .94-.3 3.08 1.15a10.7 10.7 0 0 1 5.6 0c2.14-1.45 3.08-1.15 3.08-1.15.61 1.54.23 2.68.11 2.96.72.78 1.14 1.78 1.14 3.01 0 4.32-2.63 5.27-5.14 5.55.4.35.75 1.02.75 2.06v3.06c0 .3.2.65.78.54A11.2 11.2 0 0 0 12 .8Z"/></svg>
+        GitHub <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="home" aria-labelledby="hero-title">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="container hero-layout">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="pulse-dot"></span> OPEN SOURCE · SYNTHETIC RESEARCH PREVIEW</div>
+          <h1 id="hero-title">Trust the <em>experiment.</em><br>Question the result.</h1>
+          <p class="hero-description">A place for developers, quantitative researchers, and AI agents to test market-microstructure hypotheses with reproducible data and honest evaluation.</p>
+          <div class="hero-buttons">
+            <a href="#get-started" class="button button-primary">Run the benchmark <span aria-hidden="true">↗</span></a>
+            <a href="https://github.com/wrightpt/open-market-research-lab/issues/1" class="button button-secondary" target="_blank" rel="noopener noreferrer">Join the code review <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="hero-footnote"><span class="tiny-lock" aria-hidden="true">◇</span> No signup. No API keys. No production connectivity required.</p>
+        </div>
+
+        <div class="terminal-card" aria-label="Example benchmark commands">
+          <div class="terminal-head">
+            <span class="terminal-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>research-lab / quickstart</span>
+            <span class="terminal-state"><span class="ready-dot"></span> LOCAL</span>
+          </div>
+          <div class="terminal-code">
+            <div class="terminal-comment"># Clone the public research repository</div>
+            <div><span class="prompt">$</span> git clone https://github.com/wrightpt/<wbr>open-market-research-lab.git</div>
+            <div><span class="prompt">$</span> cd open-market-research-lab</div>
+            <div class="terminal-spacer"></div>
+            <div class="terminal-comment"># Verify the dataset and submission</div>
+            <div><span class="prompt">$</span> python3 -m market_lab verify-data</div>
+            <div class="terminal-ok">✓ 384 development + 192 holdout fixture rows verified</div>
+            <div class="terminal-spacer"></div>
+            <div><span class="prompt">$</span> python3 -m unittest discover -s tests</div>
+            <div class="terminal-ok">✓ Reproducibility, causality &amp; accounting tests</div>
+            <div class="terminal-spacer"></div>
+            <div><span class="prompt">$</span> python3 -m market_lab backtest submissions/baseline.json</div>
+            <div class="terminal-success">{"status": "completed", "evidence": "synthetic_only"}</div>
+          </div>
+          <div class="terminal-footer"><span><span class="status-dot"></span> Offline-first</span><span>Python 3.11+ · stdlib only</span></div>
+        </div>
+      </div>
+      <div class="container stats-strip">
+        <div><strong>01</strong><span>Public synthetic dataset</span></div>
+        <div><strong>576</strong><span>Scripted hourly bars</span></div>
+        <div><strong>43+</strong><span>Engineering checks</span></div>
+        <div><strong>0</strong><span>External credentials required</span></div>
+      </div>
+    </section>
+
+    <section class="section section-datasets" id="datasets" aria-labelledby="datasets-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">01 / DATA CATALOG</p>
+            <h2 id="datasets-title">Know exactly what you're querying.</h2>
+            <p>Every published field has a meaning, a time basis, and a provenance trail. This catalog describes <strong>synthetic files only</strong>—not the private ClickHouse schema.</p>
+          </div>
+          <a class="text-link" href="https://github.com/wrightpt/open-market-research-lab/blob/main/DATA_POLICY.md" target="_blank" rel="noopener noreferrer">Read the data policy <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="catalog-panel">
+          <div class="catalog-overview">
+            <div class="catalog-label"><span class="dataset-icon">▦</span> DATASET / 001 <span class="pill">PUBLIC FIXTURE</span></div>
+            <h3 id="catalog-name">Synthetic liquidity and deleveraging benchmark</h3>
+            <p id="catalog-summary">Deterministic invented data for verifying research mechanics, not real market history.</p>
+            <div class="catalog-facts">
+              <div><span>Instrument</span><strong id="catalog-instrument">SYNTHETIC:TOY-USD</strong></div>
+              <div><span>Interval</span><strong id="catalog-interval">1 hour</strong></div>
+              <div><span>Source</span><strong id="catalog-source">Generated / no venue</strong></div>
+              <div><span>Access</span><strong>Public Git files</strong></div>
+            </div>
+            <div class="dataset-link-row">
+              <a href="https://github.com/wrightpt/open-market-research-lab/tree/main/data/synthetic-v1" target="_blank" rel="noopener noreferrer" class="button button-small">Browse fixture files <span aria-hidden="true">↗</span></a>
+              <a href="https://github.com/wrightpt/open-market-research-lab/blob/main/data/synthetic-v1/manifest.json" target="_blank" rel="noopener noreferrer" class="subtle-link">View source manifest</a>
+            </div>
+          </div>
+          <div class="catalog-details">
+            <div class="catalog-details-header">
+              <h4>Versioned coverage</h4>
+              <span class="muted-tag">SHA-256 VERIFIED</span>
+            </div>
+            <div class="split-grid" id="catalog-splits">
+              <div class="split-card"><span>Development</span><strong>384 bars</strong><small>Documented synthetic fixture</small></div>
+              <div class="split-card"><span>Holdout exercise</span><strong>192 bars</strong><small>Visible; not a blind dataset</small></div>
+            </div>
+            <div class="catalog-note"><span aria-hidden="true">ⓘ</span> The holdout is public and exercises process controls. It cannot demonstrate out-of-sample predictive power.</div>
+            <div class="table-head">
+              <h4>Field dictionary</h4>
+              <label for="field-filter" class="visually-hidden">Filter documented fields</label>
+              <input type="search" id="field-filter" placeholder="Filter fields…" autocomplete="off">
+            </div>
+            <div class="field-scroll">
+              <table>
+                <thead><tr><th scope="col">Field</th><th scope="col">Unit</th><th scope="col">Meaning</th></tr></thead>
+                <tbody id="catalog-fields"><tr><td colspan="3">Loading synthetic catalog…</td></tr></tbody>
+              </table>
+            </div>
+            <p id="catalog-message" class="catalog-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-workflow" id="workflow" aria-labelledby="workflow-title">
+      <div class="container">
+        <div class="section-heading">
+          <div><p class="section-kicker">02 / RESEARCH METHOD</p><h2 id="workflow-title">Built for reproducibility, not screenshots.</h2></div>
+        </div>
+        <div class="process-grid">
+          <article class="process-card"><span class="process-number">01</span><div class="process-icon" aria-hidden="true">⌁</div><h3>Fix the evidence</h3><p>Pin byte-identical CSV data, record SHA-256 hashes, and document gaps and unavailable features.</p><span class="process-tag">DATA CUSTODY</span></article>
+          <article class="process-card"><span class="process-number">02</span><div class="process-icon" aria-hidden="true">↗</div><h3>Prove causal timing</h3><p>Make decisions at bar close, fill at the next open, and test that future changes cannot rewrite past signals.</p><span class="process-tag">NO LOOKAHEAD</span></article>
+          <article class="process-card"><span class="process-number">03</span><div class="process-icon" aria-hidden="true">⊕</div><h3>Show the full cost</h3><p>Account for fees, adverse slippage, controls, missed warnings and incomplete outcome windows.</p><span class="process-tag">HONEST EVALUATION</span></article>
+          <article class="process-card"><span class="process-number">04</span><div class="process-icon" aria-hidden="true">⑂</div><h3>Publish your criticism</h3><p>Submit the smallest failing synthetic fixture, a regression test, or a focused methodological correction.</p><span class="process-tag">GITHUB PR</span></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-start" id="get-started" aria-labelledby="start-title">
+      <div class="container start-layout">
+        <div class="start-intro">
+          <p class="section-kicker">03 / GET STARTED</p>
+          <h2 id="start-title">Your first experiment is four commands away.</h2>
+          <p>Clone, verify, test and run. Python's standard library is all you need. No virtual environment, service account, credentials, or subscription.</p>
+          <a class="text-link" href="https://github.com/wrightpt/open-market-research-lab/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">Contribution guide <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="code-widget">
+          <div class="code-widget-header"><span><span class="ready-dot"></span> bash / local workstation</span><button class="copy-button" type="button" data-copy-target="quickstart-code" aria-label="Copy quickstart commands">Copy commands</button></div>
+          <pre id="quickstart-code"><code>git clone https://github.com/wrightpt/open-market-research-lab.git
+cd open-market-research-lab
+python3 -m market_lab verify-data
+python3 -m unittest discover -s tests -v
+python3 -m market_lab backtest submissions/baseline.json</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-agents" id="agents" aria-labelledby="agents-title">
+      <div class="container">
+        <div class="section-heading"><div><p class="section-kicker">04 / AGENT WORKFLOWS</p><h2 id="agents-title">Bring the coding agent you already use.</h2><p>Agents work on the same public Git repository. No Kubernetes token, remote MCP server, or direct database access is necessary for the current benchmark.</p></div></div>
+        <div class="agent-layout">
+          <div class="agent-tabs" role="tablist" aria-label="Agent onboarding">
+            <button type="button" role="tab" id="tab-claude" aria-selected="true" aria-controls="panel-claude" data-agent="claude">Claude Code <span>↗</span></button>
+            <button type="button" role="tab" id="tab-codex" aria-selected="false" aria-controls="panel-codex" tabindex="-1" data-agent="codex">Codex <span>↗</span></button>
+            <button type="button" role="tab" id="tab-opencode" aria-selected="false" aria-controls="panel-opencode" tabindex="-1" data-agent="opencode">OpenCode <span>↗</span></button>
+          </div>
+          <div class="agent-panels">
+            <section role="tabpanel" id="panel-claude" aria-labelledby="tab-claude">
+              <div class="agent-panel-head"><span>Claude Code</span><span class="muted-tag">COPY &amp; PASTE</span></div>
+              <p>Open Claude Code in your cloned checkout and give it this bounded task:</p>
+              <div class="agent-prompt"><pre id="prompt-claude">Read AGENTS.md and DATA_POLICY.md. Verify the synthetic fixture hashes and run all unit tests. Review the baseline for lookahead leakage or incorrect fill-cost accounting. Report a minimal failing synthetic test, if any. Never use private systems or evaluate holdout outcomes.</pre><button type="button" class="copy-button" data-copy-target="prompt-claude">Copy prompt</button></div>
+            </section>
+            <section role="tabpanel" id="panel-codex" aria-labelledby="tab-codex" hidden>
+              <div class="agent-panel-head"><span>Codex</span><span class="muted-tag">COPY &amp; PASTE</span></div>
+              <p>Run Codex interactively from your cloned checkout with this request:</p>
+              <div class="agent-prompt"><pre id="prompt-codex">Read AGENTS.md. Validate the deterministic data manifest and baseline submission. Run the repository tests. Audit causal-prefix invariance and next-open gap execution. Suggest a focused regression test only; do not call external APIs, access credentials or score the public holdout.</pre><button type="button" class="copy-button" data-copy-target="prompt-codex">Copy prompt</button></div>
+            </section>
+            <section role="tabpanel" id="panel-opencode" aria-labelledby="tab-opencode" hidden>
+              <div class="agent-panel-head"><span>OpenCode</span><span class="muted-tag">COPY &amp; PASTE</span></div>
+              <p>Open OpenCode within the repository and ask it to inspect the same evidence:</p>
+              <div class="agent-prompt"><pre id="prompt-opencode">Inspect AGENTS.md, docs/ARCHITECTURE.md and DATA_POLICY.md. Execute the local synthetic verification and test suite. Check missing-value propagation, cost reconciliation and the experiment evidence contract. Provide a small reviewable PR with tests if you find a bug. No production access or unapproved data.</pre><button type="button" class="copy-button" data-copy-target="prompt-opencode">Copy prompt</button></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-roadmap" id="roadmap" aria-labelledby="roadmap-title">
+      <div class="container roadmap-layout">
+        <div>
+          <p class="section-kicker">05 / WHAT'S NEXT</p>
+          <h2 id="roadmap-title">Research infrastructure should be boringly secure.</h2>
+          <p>We're designing authenticated data access and hosted MCP as a separate, auditable product. Nothing on this page issues API keys, accepts signups, or reaches a production cluster.</p>
+          <a class="text-link" href="https://github.com/wrightpt/open-market-research-lab/issues" target="_blank" rel="noopener noreferrer">Follow development on GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="roadmap-steps" aria-label="Future product phases">
+          <div><span class="step-state available">AVAILABLE</span><strong>Public synthetic benchmark</strong><p>Cloneable dataset, scripts, tests, and PR workflow.</p></div>
+          <div><span class="step-state planned">PLANNED</span><strong>Developer portal and beta identity</strong><p>GitHub sign-in, limited accounts, key rotation, and usage budgets.</p></div>
+          <div><span class="step-state gated">SECURITY GATE</span><strong>Licensed historical data API</strong><p>Approved datasets, separate read-only identity, quotas, and isolation.</p></div>
+          <div><span class="step-state gated">SECURITY GATE</span><strong>Remote OAuth MCP</strong><p>Agent-friendly access to the same permitted, bounded research tools.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-layout">
+      <div><a class="brand" href="#home"><span class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span></span><span>OPEN MARKET <strong>LAB</strong></span></a><p>Open code. Reproducible evidence. No unearned certainty.</p></div>
+      <div class="footer-links"><a href="https://github.com/wrightpt/open-market-research-lab" target="_blank" rel="noopener noreferrer">Source code ↗</a><a href="https://github.com/wrightpt/open-market-research-lab/issues/1" target="_blank" rel="noopener noreferrer">Research challenge ↗</a><a href="https://github.com/wrightpt/open-market-research-lab/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer">Security ↗</a></div>
+    </div>
+    <div class="container footer-bottom"><span>Apache-2.0 · Synthetic fixtures only</span><span>Not investment advice · No real market performance implied</span></div>
+  </footer>
+  <div class="toast" id="copy-status" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

@@ -11,6 +11,22 @@ contract, synthetic fixtures with SHA-256 identities, tests, and contribution an
 release policies. There are no services, accounts, databases, API keys, external
 data integrations, or deployment components. The runnable lab has no public service or cluster access.
 
+## Developer portal preview
+
+We're preparing a small, static [developer portal](portal/README.md) with a
+searchable catalog of the **same synthetic fixtures** in this repository,
+copyable Python quickstart commands, and guidance for Claude Code, Codex and
+OpenCode. Its [future product design](docs/PORTAL_ARCHITECTURE.md) is separate
+from the running trading infrastructure.
+
+The preview has no registration, API key issuance, hosted MCP endpoint,
+real-market data service or deployment. Review it locally with:
+
+```sh
+python3 scripts/build_portal_catalog.py --check
+python3 -m http.server 8765 --bind 127.0.0.1 --directory portal
+```
+
 ## Human quickstart
 
 From the repository root, with **Python 3.11 or newer**:

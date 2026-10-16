@@ -1,0 +1,95 @@
+{
+  "access_method": "git_clone_local_files",
+  "api_availability": "not_available",
+  "caveats": [
+    "Synthetic scenarios do not establish predictive performance or profitability.",
+    "The holdout fixture is public and is not independently blinded market evidence.",
+    "No private database, Kubernetes, Vault, exchange, or trading access is available."
+  ],
+  "dataset_id": "synthetic-liquidity-v1",
+  "embargo_bars": 24,
+  "fields": [
+    {
+      "description": "Bar-close time; all features available at close",
+      "name": "timestamp",
+      "unit": "UTC date-time"
+    },
+    {
+      "description": "Open of the preceding one-hour synthetic bar",
+      "name": "open",
+      "unit": "synthetic quote"
+    },
+    {
+      "description": "High of the synthetic bar",
+      "name": "high",
+      "unit": "synthetic quote"
+    },
+    {
+      "description": "Low of the synthetic bar",
+      "name": "low",
+      "unit": "synthetic quote"
+    },
+    {
+      "description": "Close of the synthetic bar",
+      "name": "close",
+      "unit": "synthetic quote"
+    },
+    {
+      "description": "Nonnegative synthetic volume",
+      "name": "volume",
+      "unit": "invented units"
+    },
+    {
+      "description": "Synthetic quoted spread",
+      "name": "spread_bps",
+      "unit": "basis points"
+    },
+    {
+      "description": "Synthetic near-mid aggregate depth, not an order book",
+      "name": "depth_usd",
+      "unit": "invented USD"
+    },
+    {
+      "description": "Synthetic derivative open interest",
+      "name": "open_interest_usd",
+      "unit": "invented USD"
+    },
+    {
+      "description": "Synthetic liquidation context",
+      "name": "liquidation_usd",
+      "unit": "invented USD"
+    }
+  ],
+  "instrument": "SYNTHETIC:TOY-USD",
+  "interval_seconds": 3600,
+  "mcp_availability": "not_available",
+  "redistribution": "Apache-2.0 original synthetic fixtures",
+  "requires_key": false,
+  "schema_version": 1,
+  "source_kind": "synthetic_generated",
+  "source_manifest": "data/synthetic-v1/manifest.json",
+  "splits": {
+    "development": {
+      "first_close": "2024-01-01T01:00:00Z",
+      "last_close": "2024-01-17T00:00:00Z",
+      "rows": 384,
+      "sha256": "2f09fc34b9c7124b4d3bcdb93b8227c6c3a451b1c10d544016860d174fa6d544",
+      "source_path": "data/synthetic-v1/development.csv",
+      "use": "development_experiments",
+      "visibility": "public_fixture"
+    },
+    "holdout": {
+      "first_close": "2024-01-18T01:00:00Z",
+      "last_close": "2024-01-26T00:00:00Z",
+      "rows": 192,
+      "sha256": "b61c68b8ede9acf14593966cfb7a39d8306810919567cb72449801be1c7f1587",
+      "source_path": "data/synthetic-v1/holdout.csv",
+      "use": "holdout_mechanics_only",
+      "visibility": "public_fixture"
+    }
+  },
+  "summary": "A deterministic toy market panel for testing lookahead safety, transaction-cost accounting, and reproducibility. Not real market data.",
+  "timestamp_semantics": "bar close UTC; all fields available at close",
+  "title": "Synthetic liquidity and deleveraging benchmark",
+  "venue": "NONE"
+}
