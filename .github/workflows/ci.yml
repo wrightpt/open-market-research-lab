@@ -45,6 +45,10 @@
           "run": "python3 -m unittest discover -s tests -v"
         },
         {
+          "name": "Native JavaScript portal state checks",
+          "run": "node --test developer_portal/tests/state.test.mjs"
+        },
+        {
           "name": "Verify fixture custody and submission",
           "run": "python3 -m market_lab verify-data\npython3 -m market_lab validate submissions/baseline.json"
         },

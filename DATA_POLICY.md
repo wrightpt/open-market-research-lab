@@ -85,3 +85,10 @@ Any future real dataset would require documented acquisition authority, license
 and redistribution rights, source identity, instrument mapping, event/receipt
 timing, revision policy, completeness and missingness, and immutable split custody.
 Real-data admission and database access are outside this prototype's authority.
+
+The portal catalog is generated from this public synthetic manifest. Coverage and
+holdout hashes are metadata, not scored holdout outcomes. Its schema includes
+all ten fields, units, null meaning, hourly resolution, freshness (frozen), gaps,
+retention (versioned source), original provenance and Apache-2.0 license. API
+approval does not approve a real dataset: source rights, qualification, immutable
+identity and an explicit release decision are separate gates.

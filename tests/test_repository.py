@@ -53,7 +53,7 @@ class RepositoryTests(unittest.TestCase):
             self.assertNotIn(token, serialized)
 
     def test_python_syntax_and_source_whitespace(self):
-        for directory in ("market_lab", "tests"):
+        for directory in ("market_lab", "developer_portal", "tests"):
             for path in (ROOT / directory).glob("*.py"):
                 payload = path.read_bytes()
                 self.assertTrue(payload.endswith(b"\n"), path)
@@ -90,7 +90,7 @@ class RepositoryTests(unittest.TestCase):
         )
         # Worktree .git pointers and local Git metadata are not distributable source.
         paths = [p for p in ROOT.iterdir() if p.is_file() and p.name != ".git"]
-        for name in ("market_lab", "tests", "docs", "data", "schemas", "submissions", "outreach", ".github"):
+        for name in ("market_lab", "developer_portal", "tests", "docs", "data", "schemas", "submissions", "outreach", ".github"):
             paths.extend(p for p in (ROOT / name).rglob("*") if p.is_file() and "__pycache__" not in p.parts)
         for path in paths:
             content = path.read_text()

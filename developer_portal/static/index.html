@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An inspectable synthetic research benchmark and developer workspace.">
+  <title>Open Market Research Lab · Developers</title>
+  <link rel="stylesheet" href="/portal/style.css">
+  <script type="module" src="/portal/app.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+  <a class="brand" href="#overview" aria-label="Open Market Research Lab home"><span class="mark" aria-hidden="true">om<span>r</span></span><span>Open Market <br>Research Lab</span></a>
+  <span class="eyebrow nav-label">Developer workspace</span>
+  <nav aria-label="Main navigation">
+    <a href="#overview" aria-current="page"><span aria-hidden="true">01</span> Overview</a>
+    <a href="#datasets"><span aria-hidden="true">02</span> Datasets</a>
+    <a href="#api"><span aria-hidden="true">03</span> API reference</a>
+    <a href="#account"><span aria-hidden="true">04</span> Access &amp; keys</a>
+    <a href="#challenge"><span aria-hidden="true">05</span> Research challenge</a>
+  </nav>
+  <div class="rail-foot"><span class="dot"></span> Synthetic by construction<p>Source you can inspect.<br>Claims you can reproduce.</p><a href="https://github.com/wrightpt/open-market-research-lab">GitHub repository ↗</a><small>Apache-2.0 · source &amp; fixtures</small></div>
+</aside>
+<div class="workspace">
+  <header class="topbar"><span>LAB / <strong>DEVELOPERS</strong></span><a id="top-account" class="button small secondary" href="#account">Your workspace <span aria-hidden="true">↗</span></a></header>
+  <div class="scope-strip"><span class="status-pill">SYNTHETIC ONLY</span><span>Engineering fixtures. No live feeds, real-market availability, or predictability claims.</span></div>
+  <div id="demo-banner" class="demo-banner" hidden><strong>DEMO / MOCK</strong> Local preview · no real GitHub login or usable keys.
+    <label for="demo-scenario">Preview state</label><select id="demo-scenario"><option value="anonymous">Signed out</option><option value="unrequested">Access not requested</option><option value="approved">Approved</option><option value="pending">Pending</option><option value="denied">Denied</option><option value="loading">Loading (2s)</option><option value="failure">API failure</option></select>
+  </div>
+  <div id="connection" class="connection" role="status" aria-live="polite">Connecting to the same-origin portal…</div>
+  <main id="main" tabindex="-1">
+    <section id="overview" class="view">
+      <div class="hero"><div><div class="eyebrow">Open methods. Bounded evidence.</div><h1>Make research<br><em>inspectable.</em></h1><p class="lede">Start with a known dataset. Trace every decision. Build a result someone else can reproduce.</p><div class="actions"><a href="#datasets" class="button">Explore the fixtures <span aria-hidden="true">→</span></a><a href="#api" class="text-link">Read the API contract ↗</a></div></div>
+        <div class="signal-sheet" aria-label="Illustrative synthetic signal timeline, not market data"><div class="sheet-title"><span>FIXTURE / 001</span><span class="dot"></span></div><h2>A warning is a question.</h2><p>Liquidity deterioration → subsequent drawdown?</p><svg viewBox="0 0 420 180" role="img" aria-label="Schematic lines depicting spread, depth and price. No measurements or performance result."><path class="grid" d="M0 30H420M0 80H420M0 130H420M60 0V180M180 0V180M300 0V180"/><path class="trace-a" d="M0 95L32 94 55 91 79 94 104 90 131 89 157 90 182 66 208 63 234 40 261 45 287 42 314 38 341 53 368 50 395 53 420 51"/><path class="trace-b" d="M0 57L32 53 55 55 79 51 104 55 131 54 157 55 182 70 208 85 234 91 261 104 287 109 314 120 341 129 368 132 395 130 420 134"/><path class="trace-c" d="M0 115L32 114 55 111 79 113 104 109 131 110 157 108 182 107 208 110 234 110 261 111 287 118 314 141 341 150 368 147 395 158 420 158"/></svg><div class="legend"><span>— spread</span><span>— depth</span><span>— price</span></div><div class="sheet-note">ILLUSTRATION ONLY · NOT OBSERVED MARKET DATA</div></div>
+      </div>
+      <div class="section-heading"><h2>A small surface. A clear chain of evidence.</h2><span class="eyebrow">01 / workflow</span></div>
+      <div class="steps"><article><span class="step-number">01</span><h3>Discover &amp; verify</h3><p>Inspect fields, units, gaps, and exact SHA-256 identities before using a fixture.</p><a href="#datasets">Open the catalog →</a></article><article><span class="step-number">02</span><h3>Reproduce locally</h3><p>Run the standard-library baseline with causal features, explicit costs, and preserved unknowns.</p><a href="#api">Get the quickstart →</a></article><article><span class="step-number">03</span><h3>Submit a critique</h3><p>Bring a small failing example or a reproducible improvement through a reviewed PR.</p><a href="#challenge">Read challenge 001 →</a></article></div>
+      <div class="boundary"><strong>What is available today?</strong><p>The original synthetic benchmark and its source. Portal account screens are an integration surface; this preview uses mock responses. Real datasets and a hosted research service require separate approval.</p></div>
+    </section>
+    <section id="datasets" class="view" hidden>
+      <div class="eyebrow">02 / dataset registry</div><h1>Know your inputs.</h1><p class="lede">Versioned, synthetic fixtures with explicit provenance. No real-market catalog is advertised.</p>
+      <div class="toolbar"><label for="dataset-search">Find a dataset</label><input id="dataset-search" type="search" placeholder="Search name, asset, or venue"><button id="reload-datasets" class="button small secondary">Refresh catalog</button></div>
+      <div id="catalog-status" role="status" aria-live="polite">Loading catalog…</div><div id="dataset-list" class="dataset-list"></div>
+      <article id="dataset-detail" class="detail" hidden aria-labelledby="dataset-title"><div class="section-heading"><h2 id="dataset-title"></h2><span class="status-pill">SYNTHETIC</span></div><p id="dataset-description"></p><dl id="dataset-facts" class="facts"></dl><h3>Coverage &amp; identity</h3><div id="dataset-coverage" class="table-scroll"></div><h3>Schema &amp; units</h3><div id="dataset-fields" class="table-scroll"></div><p class="muted">Timestamps denote bar close. Features become available at that close. Missing values remain unknown; no holdout outcomes are exposed here.</p></article>
+    </section>
+    <section id="api" class="view" hidden>
+      <div class="eyebrow">03 / developer reference</div><h1>One contract.<br><em>Seven research tools.</em></h1><p class="lede">A bounded HTTPS interface shared by API clients and the local stdio adapter. Authorization and query limits belong to the backend.</p>
+      <div class="boundary"><strong>Integration status</strong><p>No production API origin is published here. The loopback preview mocks portal account operations; it does not serve the research API. Cost information will be added after separate review.</p></div>
+      <div class="api-grid"><article><h2>Offline quickstart</h2><p>Python 3.11+ · standard library · no account required</p><pre><code>python3 -m market_lab verify-data
+python3 -m market_lab validate submissions/baseline.json
+python3 -m unittest discover -s tests -v
+python3 -m market_lab backtest submissions/baseline.json</code></pre><p>No holdout evaluation is needed for onboarding.</p></article><article><h2>HTTPS request shape</h2><p>Use an approved origin and a key supplied privately through your environment.</p><pre><code>POST /v1/research/tools/list_datasets
+Content-Type: application/json
+X-API-Key: [read from your environment]
+
+{}</code></pre><p>Never put a key in a URL, chat prompt, screenshot, or committed configuration.</p></article></div>
+      <div class="table-scroll"><table><caption>Allowlisted research methods</caption><thead><tr><th>Tool</th><th>Purpose</th></tr></thead><tbody><tr><td><code>list_datasets</code></td><td>Discover the caller's authorized catalog</td></tr><tr><td><code>describe_dataset</code></td><td>Inspect sanitized identity and provenance</td></tr><tr><td><code>get_coverage</code></td><td>Read coverage, gaps, and timing</td></tr><tr><td><code>get_schema</code></td><td>Read field types, units, and missingness</td></tr><tr><td><code>query_timeseries</code></td><td>Request a bounded authorized slice</td></tr><tr><td><code>get_research_examples</code></td><td>Read reproducible research examples</td></tr><tr><td><code>get_usage_limits</code></td><td>Read current usage and limits</td></tr></tbody></table></div>
+      <p>Argument schemas remain a backend integration review item. This UI does not invent storage names, SQL access, or a data entitlement.</p><a class="text-link" href="https://github.com/wrightpt/open-market-research-lab">Source and contributor documentation ↗</a>
+    </section>
+    <section id="account" class="view" hidden>
+      <div class="eyebrow">04 / developer access</div><h1>Your access.<br><em>Explicit boundaries.</em></h1><p class="lede">A GitHub identity is a sign-in method. Dataset access is a separate backend decision.</p>
+      <div id="account-status" class="boundary" role="status" aria-live="polite">Loading account…</div>
+      <div class="actions"><a id="github-login" class="button" href="/portal/auth/github">Sign in with GitHub ↗</a><button id="logout" class="button secondary" hidden>Sign out</button><button id="refresh-account" class="button secondary">Refresh status</button></div>
+      <form id="request-form" class="form-panel" hidden><h2>Request research access</h2><label for="purpose">Research purpose</label><textarea id="purpose" name="purpose" required minlength="20" maxlength="1000" rows="4" aria-describedby="purpose-help"></textarea><p id="purpose-help" class="muted">Explain your reproducible research question. Do not include private data or credentials.</p><button type="submit" class="button">Submit access request</button></form>
+      <div id="approved-panel" hidden><div class="section-heading"><h2>API keys</h2><span class="eyebrow">research:read only</span></div><p>New and rotated secrets are shown once. Names, scope, and expiry remain visible. The server controls all permissions.</p><form id="key-form" class="key-form"><div><label for="key-name">Key name</label><input id="key-name" name="name" required minlength="3" maxlength="80" placeholder="Local research client" autocomplete="off"></div><p>Expires in <strong>30 days</strong><br><span class="muted">Scope: research:read</span></p><button type="submit" class="button">Create key</button></form><div id="key-status" role="status" aria-live="polite"></div><div id="key-list" class="key-list"></div>
+        <div class="section-heading"><h2>Usage &amp; quota</h2><span id="usage-label" class="eyebrow">Unavailable</span></div><progress id="usage-meter" max="100" value="0" aria-label="Daily request quota used"></progress><p id="usage-detail" class="muted">Waiting for the backend's usage record.</p></div>
+      <div id="action-status" role="status" aria-live="polite"></div>
+    </section>
+    <section id="challenge" class="view" hidden><div class="eyebrow">05 / challenge 001</div><h1>Can deterioration<br><em>be seen in time?</em></h1><p class="lede">When spreads widen, depth shrinks, and open interest falls, does a causally timed alert precede a drawdown—or only tell us what already happened?</p><div class="challenge-grid"><article><h2>Bring a reproducible critique.</h2><p>The baseline uses scripted liquidity and deleveraging scenarios. It includes false alarms, missing observations, unwarned shocks, and late warnings. Success on these fixtures cannot establish a market edge.</p><ul><li>Prove a future-data leak with a minimal prefix example.</li><li>Reconcile next-open fills and both transaction costs.</li><li>Check denominator treatment for unavailable outcomes.</li><li>Preserve exact identities and every development trial.</li></ul><div class="actions"><a class="button" href="https://github.com/wrightpt/open-market-research-lab/issues/1">Open the challenge ↗</a><a class="text-link" href="https://github.com/wrightpt/open-market-research-lab/pulls">Review contributions ↗</a></div></article><aside class="research-note"><span class="eyebrow">Contribution boundary</span><h3>Evidence before claims.</h3><p>PRs contain original code and synthetic evidence. No private history, credentials, arbitrary submitted executable strategies, or cluster access.</p><p>Freeze development selection before a separately authorized holdout attempt. The visible synthetic holdout is a workflow exercise, not blind market validation.</p></aside></div></section>
+  </main>
+  <footer><span>Open Market Research Lab</span><span>Synthetic engineering evidence · no trading authority</span><a href="https://github.com/wrightpt/open-market-research-lab/blob/main/LICENSE">Apache-2.0 ↗</a></footer>
+</div>
+<dialog id="secret-dialog" aria-labelledby="secret-title" aria-describedby="secret-warning"><div class="eyebrow">ONCE-ONLY DISPLAY</div><h2 id="secret-title">Save your new key securely.</h2><p id="secret-warning">This secret disappears when you dismiss this window, navigate away, or leave the page. Keep it out of prompts, source files, and screenshots.</p><pre><code id="secret-value"></code></pre><p id="secret-kind" class="muted"></p><div class="actions"><button id="copy-secret" class="button secondary">Copy key</button><button id="dismiss-secret" class="button">Saved · dismiss</button></div><p id="copy-status" role="status"></p></dialog>
+<dialog id="confirm-dialog" aria-labelledby="confirm-title"><h2 id="confirm-title">Confirm key action</h2><p id="confirm-description"></p><div class="actions"><button id="confirm-cancel" class="button secondary">Cancel</button><button id="confirm-accept" class="button">Confirm</button></div></dialog>
+</body>
+</html>
