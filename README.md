@@ -8,8 +8,22 @@ predictability, profitability, alpha, or trading readiness**.
 
 This checkout contains a Python standard-library backtest, a bounded JSON strategy
 contract, synthetic fixtures with SHA-256 identities, tests, and contribution and
-release policies. There are no services, accounts, databases, API keys, external
-data integrations, or deployment components. The runnable lab has no public service or cluster access.
+release policies. The developer portal adds a loopback mock preview; its login,
+keys, approval, and quotas are demonstrations. No real datasets or public service
+are supplied. The offline benchmark remains independent of all portal components.
+
+## Developer portal preview
+
+```bash
+python3 -m developer_portal.demo
+```
+
+Open `http://127.0.0.1:8765/portal/`. The conspicuous **DEMO / MOCK** selector
+exercises signed-out, unrequested, pending, denied, approved, loading, and failure
+states. It is not GitHub OAuth; its fake keys cannot access any API. Stop with
+Ctrl-C. Static assets can be mounted at `/portal/` by the separately reviewed
+backend. See [portal guide](docs/DEVELOPER_PORTAL.md) and
+[integration contract and open decisions](docs/PORTAL_CONTRACT.md).
 
 ## Human quickstart
 
@@ -89,6 +103,7 @@ strategy outcomes. Read [DATA_POLICY.md](DATA_POLICY.md) before any holdout work
 | Path | Purpose |
 | --- | --- |
 | `market_lab/` | Local CLI, bounded validation, causal features, accounting, evaluation |
+| `developer_portal/` | Same-origin static UI, synthetic metadata, loopback mock preview |
 | `data/synthetic-v1/` | Development/holdout CSVs and immutable versioned manifest |
 | `schemas/submission.schema.json` | Machine-readable strategy submission contract |
 | `submissions/baseline.json` | One transparent, fixed example; no parameter search |

@@ -41,7 +41,10 @@ prompt after the task; do not close this or another contributor's session.
 
 ## Implementation and evidence
 
-- Python 3.11+ standard library only; no installation or external environment needed.
+- The benchmark and demo use Python 3.11+ standard library only. Browser assets
+  use native JavaScript modules with no build or downloaded runtime dependencies.
+  Node's built-in test runner checks UI state; Playwright rendered checks are optional
+  and require an already trusted browser/test installation.
 - Entry point: `python3 -m market_lab --help`.
 - Full local gate: `python3 -m unittest discover -s tests -v` then
   `python3 -m market_lab verify-data` and `git diff --check`.
@@ -61,3 +64,18 @@ prompt after the task; do not close this or another contributor's session.
   posting to a forum, messaging a community, or sharing private history.
 
 Report the files changed, exact validation results, and material limitations.
+
+## Developer portal work
+
+Read docs/DEVELOPER_PORTAL.md and docs/PORTAL_CONTRACT.md. Review the current
+contract before integration; proposed nested envelopes are not backend guarantees.
+The UI never grants access. Backend authorization, CSRF, OAuth, key custody,
+rate limits, and dataset policy are separate responsibilities. Never implement
+credential persistence in browser storage or put secrets in prompts/config commits.
+Only the loopback fixture may expose mock scenario switching. It must never become
+a deployed authentication service. Public data remains synthetic-only.
+
+An explicitly authorized isolated feature branch may receive reviewed local
+commits and PRs. Follow the session's push restriction; authorization to develop
+or commit is not authorization to push, merge, deploy, or activate an endpoint.
+Do not launch agents or create another task ledger without explicit coordination.

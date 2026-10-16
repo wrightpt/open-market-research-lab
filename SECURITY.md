@@ -14,8 +14,8 @@ deployment access is part of the implementation or its tests.
   exact columns, OHLC bounds, explicit missing values, and SHA-256 custody.
 - CLI paths are repository-relative and reject traversal and symlinks. Outputs
   use exclusive creation under `artifacts/`. Existing reports are never replaced.
-- There are no network clients, database drivers, subprocess execution, dynamic
-  plugin loading, environment-secret reads, or telemetry in the runtime.
+- The offline `market_lab` runtime has no network clients, database drivers,
+  subprocess execution, dynamic plugin loading, environment-secret reads, or telemetry.
 - A local actor able to edit the code or files can bypass hashes and receipts.
   These checks catch mistakes; they do not provide hostile-user isolation or
   externally witnessed custody. Path checks also do not defend against a hostile
@@ -23,6 +23,17 @@ deployment access is part of the implementation or its tests.
   untrusted code, without credentials or private data.
 - Holdout consumption is exclusively created and flushed to disk before outcome
   evaluation. Failed attempts remain consumed. Backups must retain receipts.
+
+## Portal preview boundary
+
+The portal preview binds only literal IPv4 loopback and validates Host, Origin,
+and CSRF on mutations. It has no real identity or persistent authorization state.
+Never expose it through a tunnel, proxy, public bind, or production mount.
+The UI renders untrusted strings with text nodes, fetches only same-origin API
+paths, and keeps once-only secrets in memory/DOM until dismissal, navigation,
+or tab hiding. Explicit clipboard copies remain the user's responsibility.
+The production backend must supply secure sessions, OAuth, authorization and
+no-store responses; hiding a UI control is never an access-control boundary.
 
 ## GitHub Actions configuration
 
