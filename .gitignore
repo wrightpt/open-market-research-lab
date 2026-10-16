@@ -10,3 +10,7 @@ htmlcov/
 *.pem
 *.key
 .DS_Store
+.mcp.json
+opencode.json
+opencode.jsonc
+.codex/

@@ -25,6 +25,13 @@ Ctrl-C. Static assets can be mounted at `/portal/` by the separately reviewed
 backend. See [portal guide](docs/DEVELOPER_PORTAL.md) and
 [integration contract and open decisions](docs/PORTAL_CONTRACT.md).
 
+The optional [stdio HTTPS adapter](docs/MCP_ADAPTER.md) implements seven research
+tools with MCP 2026-07-28 per-request metadata and tested 2025-11-25 legacy
+initialization. It requires a separately approved API origin/key; this checkout
+supplies neither. [Agent setup](docs/AGENT_SETUP.md) keeps keys out of prompts and
+committed configs. Its offline HTTPS tests require the local `openssl` binary;
+the Python runtime and benchmark remain standard-library only.
+
 ## Human quickstart
 
 From the repository root, with **Python 3.11 or newer**:
@@ -104,6 +111,7 @@ strategy outcomes. Read [DATA_POLICY.md](DATA_POLICY.md) before any holdout work
 | --- | --- |
 | `market_lab/` | Local CLI, bounded validation, causal features, accounting, evaluation |
 | `developer_portal/` | Same-origin static UI, synthetic metadata, loopback mock preview |
+| `omr_mcp/` | Bounded local stdio → HTTPS seven-tool adapter, no server/database integration |
 | `data/synthetic-v1/` | Development/holdout CSVs and immutable versioned manifest |
 | `schemas/submission.schema.json` | Machine-readable strategy submission contract |
 | `submissions/baseline.json` | One transparent, fixed example; no parameter search |

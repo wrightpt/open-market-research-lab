@@ -16,7 +16,18 @@ test run is not a research verdict, a hosted release, or authority to trade.
 
 ## Local acceptance checklist
 
-- Run the documented stdlib tests and CLI without installation or network access.
+Developer portal / adapter gates are additive. Local UI and transport acceptance
+does not activate a service. Review Phase 1 and Phase 2 independently using
+[PORTAL_VALIDATION.md](PORTAL_VALIDATION.md) and [MCP_VALIDATION.md](MCP_VALIDATION.md).
+Confirm all proposed nested envelopes, key encoding and research argument schemas
+with the backend owner; prove its CSRF/session, cross-account denial, key expiry,
+atomic rotation/revocation, quotas and audit with synthetic integration tests before
+calling the components integrated. No such integration is claimed here. Public
+hosting, production credentials, real data and deployment require Patrick's
+explicit decision for the exact release and separate operations/license gates.
+
+- Run the documented stdlib tests and CLI without external network access. Portal
+  and adapter tests use disposable loopback fixtures; TLS tests require local OpenSSL.
 - Verify the exact development and holdout fixture hashes, counts, and time bounds.
 - Reject executable/unknown submission fields, unsafe paths, and malformed inputs.
 - Verify feature/decision prefix invariance and next-bar execution on price gaps.

@@ -139,6 +139,16 @@ accident-prevention guards; a file owner can forge or remove the evidence.
 
 ## Release boundary
 
+The optional developer surface is separate from `market_lab`: static same-origin
+browser assets, a disposable loopback mock, and a local stdio-to-HTTPS client.
+[DEVELOPER_PORTAL.md](DEVELOPER_PORTAL.md) diagrams the flow;
+[PORTAL_CONTRACT.md](PORTAL_CONTRACT.md) records frontend/backend assumptions;
+[MCP_ADAPTER.md](MCP_ADAPTER.md) specifies both protocol eras and bounded transport.
+No portal or adapter import is required by the offline benchmark. The backend owns
+authorization, OAuth, key custody, schema/query enforcement and audit. UI state and
+tool discovery convey no entitlement. These components supply no deployment or
+database route and never evaluate holdout as part of operation or onboarding.
+
 Tests, code review, statistical evidence, hosting, and financial authority are
 different states. Only local engineering acceptance is reachable here. See
 [RELEASE_GATES.md](RELEASE_GATES.md) for required evidence and who can authorize

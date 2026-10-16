@@ -93,3 +93,9 @@ envelope, access-request body/status vocabulary, usage units/reset field, and
 research-tool argument schemas. The initial adapter forwards bounded object
 arguments without claiming backend-specific validation. Contract tests can verify
 these proposals; they cannot certify backend integration before that review.
+
+Phase 2 additionally requires confirmation that research success is HTTP 200 with
+a JSON object, and issued key strings are 16–2048 non-space printable ASCII
+characters. The local adapter rejects other success envelopes and key encodings.
+No assumption about backend tool argument field names is embedded. See
+[MCP_ADAPTER.md](MCP_ADAPTER.md) for exact transport/protocol limits.
