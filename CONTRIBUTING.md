@@ -32,6 +32,18 @@ required. Run the stdlib syntax/whitespace checks in `tests/test_repository.py`.
 Changes to the schema must keep the validator's supported keyword subset explicit
 and update adversarial input tests. Runtime imports remain standard library only.
 
+## Portal and adapter changes
+
+For portal work, also run `node --test developer_portal/tests/state.test.mjs`.
+Use the loopback mock, never production OAuth or keys, to review access states.
+For adapter work, `python3 -m unittest discover -s tests -p test_mcp.py -v`
+exercises actual stdio and generated loopback HTTPS fixtures; it needs a local
+OpenSSL binary but no third-party Python packages or remote service. Review
+[PORTAL_CONTRACT.md](docs/PORTAL_CONTRACT.md) before changing envelopes. Supply
+separate UI and adapter commits with exact local receipts. Backend authorization
+and production activation require independent review. Do not run untrusted PR
+executables on a credentialed workstation; use restricted GitHub-hosted CI.
+
 ## Strategy submissions
 
 Copy `submissions/baseline.json` to a new repository-local JSON file. Choose a new

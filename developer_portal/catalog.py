@@ -20,6 +20,8 @@ def datasets():
     return [{
         "id": manifest["dataset_id"], "title": "Liquidity deterioration lab",
         "synthetic": True, "asset": "TOY-USD", "venue": "NONE",
+        "schema_version": manifest["schema_version"],
+        "time_basis": "UTC bar close; OHLC covers the preceding hour. Features are available at that close; first execution is next-row open.",
         "description": "Scripted early warnings, false alarms, unwarned shocks, and late warnings.",
         "granularity": "1h", "freshness": "Frozen fixture · no live updates",
         "retention": "Immutable v1 files retained in versioned source",

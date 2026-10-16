@@ -35,6 +35,17 @@ or tab hiding. Explicit clipboard copies remain the user's responsibility.
 The production backend must supply secure sessions, OAuth, authorization and
 no-store responses; hiding a UI control is never an access-control boundary.
 
+## Stdio HTTPS adapter boundary
+
+The optional stdio adapter is a separate outbound HTTPS boundary documented in
+[MCP_ADAPTER.md](docs/MCP_ADAPTER.md). It accepts only environment-selected HTTPS
+origins and seven fixed POST tools; redirects and proxy environment variables are
+ignored/rejected, and certificates/hostnames are verified. Credentials never enter
+stdio request arguments or saved configs. Limits and generic errors protect the
+transport; the backend still owns authorization and sanitization. A trusted operator
+must approve the origin: this client is not a network or hostile-code sandbox.
+Tests generate disposable loopback TLS material; they never retrieve existing keys.
+
 ## GitHub Actions configuration
 
 The workflow runs on this public repository and is configured for `pull_request`

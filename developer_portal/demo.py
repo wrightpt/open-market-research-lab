@@ -90,7 +90,7 @@ class DemoHandler(BaseHTTPRequestHandler):
             return self.error(403, "access_not_approved")
         if self.path == "/portal/api/keys":
             return self.send(200, {"keys": self.server.keys})
-        self.send(200, {"limits": {"requests_per_day": 1000, "rows_per_request": 1000},
+        self.send(200, {"limits": {"requests_per_day": 1000, "requests_per_minute": 60, "rows_per_request": 500},
                         "usage": {"requests_today": 24, "rows_today": 384, "resets_at": "2026-10-17T00:00:00Z"}})
 
     def mutate(self):
@@ -138,9 +138,11 @@ class DemoHandler(BaseHTTPRequestHandler):
                 name = current["name"]
             elif self.command == "POST" and self.path == "/portal/api/keys":
                 name = body.get("name")
-                if (not isinstance(name, str) or not 3 <= len(name.strip()) <= 80
+                if (not isinstance(name, str) or not 1 <= len(name.strip()) <= 64
+                    or len(name) > 64 or not all(32 <= ord(c) <= 126 for c in name)
                     or body.get("scopes") != ["research:read"] or body.get("expires_in_days") != 30):
                     return self.error(400, "invalid_key_request")
+                name = name.strip()
             else:
                 return self.error(404, "not_found")
             now = datetime.now(timezone.utc)
