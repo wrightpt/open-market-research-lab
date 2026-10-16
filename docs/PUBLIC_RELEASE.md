@@ -39,10 +39,11 @@ strategies or private datasets belong in PRs.
 
 ## GitHub go/no-go
 
-1. Create an EMPTY public GitHub repository under the verified owner, proposed
-   name `open-market-research-lab`. Do not initialize it with a conflicting
-   README, license, or Git ignore file. At the time this document was prepared,
-   that repository did not exist.
+1. Create an EMPTY **private** GitHub repository under the verified owner,
+   proposed name `open-market-research-lab`. Do not initialize a competing README,
+   license, or Git ignore file. At the time of preparation it did not exist.
+   Only switch its visibility to public after upload, security settings,
+   hosted CI, and source/history review are all verified.
 2. The current Workstation Commander Chrome session is signed out of GitHub,
    and the workstation's `gh` CLI has no authenticated account. The connected
    GitHub app can inspect existing repos but does not expose repository creation.
