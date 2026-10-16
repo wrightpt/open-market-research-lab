@@ -1,0 +1,21 @@
+{
+  "name": "open-market-research-synthetic-mcp",
+  "version": "0.1.0",
+  "description": "Local read-only MCP prototype for verified synthetic market research fixtures",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check server.mjs && node --check catalog.mjs && npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.3.1",
+    "@modelcontextprotocol/node": "2.1.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1"
+  }
+}
