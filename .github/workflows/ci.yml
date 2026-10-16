@@ -21,7 +21,10 @@
       "strategy": {
         "fail-fast": false,
         "matrix": {
-          "python": ["3.11", "3.14"]
+          "python": [
+            "3.11",
+            "3.14"
+          ]
         }
       },
       "steps": [
@@ -55,6 +58,40 @@
         {
           "name": "Whitespace review",
           "run": "git diff --check"
+        }
+      ]
+    },
+    "synthetic-mcp": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 5,
+      "permissions": {
+        "contents": "read"
+      },
+      "steps": [
+        {
+          "name": "Checkout without persisted credentials",
+          "uses": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "with": {
+            "persist-credentials": false,
+            "fetch-depth": 1
+          }
+        },
+        {
+          "name": "Set up Node 22",
+          "uses": "actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "with": {
+            "node-version": "22"
+          }
+        },
+        {
+          "name": "Install pinned MCP dependencies without lifecycle scripts",
+          "run": "npm ci --ignore-scripts --no-audit --no-fund",
+          "working-directory": "integrations/synthetic-mcp"
+        },
+        {
+          "name": "MCP syntax and official-client integration tests",
+          "run": "npm run check",
+          "working-directory": "integrations/synthetic-mcp"
         }
       ]
     }

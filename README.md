@@ -8,8 +8,21 @@ predictability, profitability, alpha, or trading readiness**.
 
 This checkout contains a Python standard-library backtest, a bounded JSON strategy
 contract, synthetic fixtures with SHA-256 identities, tests, and contribution and
-release policies. There are no services, accounts, databases, API keys, external
-data integrations, or deployment components. The runnable lab has no public service or cluster access.
+release policies. The baseline runs offline without external services. An
+[optional local synthetic MCP prototype](integrations/synthetic-mcp/README.md)
+lets compatible coding agents inspect **only** the published synthetic dataset.
+There are no user accounts, API keys, live database connections, public
+deployments, or Kubernetes access.
+
+## Optional ChatGPT / MCP research prototype
+
+A standalone [read-only MCP server](integrations/synthetic-mcp/README.md)
+demonstrates three research tools: `list_datasets`, `describe_dataset`, and
+`get_sample`. It binds to `127.0.0.1`, uses verified synthetic development
+fixtures, and is **not internet-hosted or connected to ChatGPT yet**.
+
+ChatGPT Work needs a separately reviewed HTTPS endpoint before it can connect.
+This prototype includes no real-market data or private infrastructure access.
 
 ## Human quickstart
 

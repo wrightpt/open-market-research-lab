@@ -33,7 +33,7 @@ class RepositoryTests(unittest.TestCase):
         workflow = json.loads(workflow_paths[0].read_text())
         self.assertEqual(set(workflow["on"]), {"pull_request", "workflow_dispatch"})
         self.assertEqual(workflow["permissions"], {"contents": "read"})
-        self.assertEqual(set(workflow["jobs"]), {"stdlib"})
+        self.assertEqual(set(workflow["jobs"]), {"stdlib", "synthetic-mcp"})
         for job in workflow["jobs"].values():
             self.assertEqual(job["runs-on"], "ubuntu-24.04")
             self.assertEqual(job["permissions"], {"contents": "read"})
@@ -41,13 +41,20 @@ class RepositoryTests(unittest.TestCase):
             self.assertNotIn("environment", job)
             for step in job["steps"]:
                 if "uses" in step:
-                    self.assertRegex(step["uses"], r"^actions/(checkout|setup-python)@[a-f0-9]{40}$")
+                    self.assertRegex(step["uses"], r"^actions/(checkout|setup-python|setup-node)@[a-f0-9]{40}$")
                 if step.get("uses", "").startswith("actions/checkout@"):
                     self.assertIs(step["with"]["persist-credentials"], False)
                 if "run" in step:
                     self.assertNotIn("${{", step["run"])
                     self.assertNotIn("market_lab holdout", step["run"])
                     self.assertNotIn("market_lab freeze", step["run"])
+        mcp_steps = workflow["jobs"]["synthetic-mcp"]["steps"]
+        self.assertEqual(
+            [s["run"] for s in mcp_steps if "run" in s],
+            ["npm ci --ignore-scripts --no-audit --no-fund", "npm run check"],
+        )
+        self.assertTrue(all(s.get("working-directory", "").startswith("integrations/synthetic-mcp")
+                            for s in mcp_steps if "run" in s))
         serialized = json.dumps(workflow)
         for token in ("secrets.", "self-hosted", "pull_request_target", "workflow_run", "id-token", "write-all"):
             self.assertNotIn(token, serialized)
@@ -90,8 +97,8 @@ class RepositoryTests(unittest.TestCase):
         )
         # Worktree .git pointers and local Git metadata are not distributable source.
         paths = [p for p in ROOT.iterdir() if p.is_file() and p.name != ".git"]
-        for name in ("market_lab", "tests", "docs", "data", "schemas", "submissions", "outreach", ".github"):
-            paths.extend(p for p in (ROOT / name).rglob("*") if p.is_file() and "__pycache__" not in p.parts)
+        for name in ("market_lab", "tests", "docs", "data", "schemas", "submissions", "outreach", ".github", "integrations"):
+            paths.extend(p for p in (ROOT / name).rglob("*") if p.is_file() and "__pycache__" not in p.parts and "node_modules" not in p.parts)
         for path in paths:
             content = path.read_text()
             for pattern in patterns:
