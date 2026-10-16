@@ -10,8 +10,8 @@ test run is not a research verdict, a hosted release, or authority to trade.
 | Holdout workflow exercise | Frozen development evidence and unchanged identities, one consumed attempt, all failures retained | Explicit local command; no predictability conclusion |
 | Real-data admission | Acquisition and redistribution rights, source/clock/coverage evidence, approved study scope | Separate owner decision; not implemented |
 | Independent research evidence | Frozen hypotheses and search log, unseen custody, uncertainty and controls, independent review | Not reached by synthetic results |
-| Public repository or package | Owner release approval, Apache-2.0 license, private-content review, security intake, repository settings review | Local candidate prepared; account creation and security intake remain unverified |
-| Hosted CI acceptance | Separate authorization to host/run; token/runner/settings review and actual hosted checks | Local configuration only |
+| Public repository or package | Owner release approval, Apache-2.0 license, private-content review, security intake, repository settings review | **GitHub source published**; private vulnerability reporting and read-only CI settings verified |
+| Hosted CI acceptance | Token/runner/settings review and actual hosted checks | **Manual GitHub-hosted run passed** for Python 3.11 and 3.14; external-fork PR behavior remains to be tested |
 | Paper service, deployment, or live execution | New design and explicit operational/financial authorization | Outside this repository's prototype scope |
 
 ## Local acceptance checklist
@@ -29,6 +29,7 @@ test run is not a research verdict, a hosted release, or authority to trade.
 - Record actual command results, environment, limitations, and whether holdout was
   consumed. Do not imply hosted CI ran because local checks passed.
 
-Local commits may follow that review. No push, remote creation, public release,
-account operation, database access, or deployment follows automatically. CI policy
-files and the PR template are preparation for review, not activation instructions.
+Public GitHub source is live and contributions must follow PRs and required CI.
+This does not authorize exchange access, data redistribution, production database
+queries, Kubernetes deployment, or forum posting. Review every PR's code and
+provenance; never run external PR code on local or self-hosted runners.

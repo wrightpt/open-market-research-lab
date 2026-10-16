@@ -26,10 +26,10 @@ deployment access is part of the implementation or its tests.
 
 ## GitHub Actions configuration
 
-The checked-in workflow is designed for an eventual public repository; its
-presence alone does not prove that hosted CI or repository settings are safe.
-Its design uses `pull_request` and manual
-dispatch only, GitHub-hosted `ubuntu-24.04` runners, a five-minute job limit, and
+The workflow runs on this public repository and is configured for `pull_request`
+and manual dispatch only. Its first hosted manual run passed for Python 3.11 and
+3.14; that does not prove hostile-fork PR isolation by itself. The design uses
+GitHub-hosted `ubuntu-24.04` runners, a five-minute job limit, and
 `permissions: {contents: read}` at both workflow and job levels. All other token
 permissions are unspecified/disabled. There is no `pull_request_target`,
 `workflow_run`, self-hosted runner, environment, repository secret reference,
@@ -48,9 +48,8 @@ and [setup-python v7.0.0](https://github.com/actions/setup-python/commit/5fda3b9
 
 ## Reporting a problem
 
-Before publishing on GitHub, enable **private vulnerability reporting** in the
-repository's Security settings and verify the private report form. Report security
-issues there, never in a public issue or PR. If private reporting cannot be
-confirmed, hold publication until a confidential channel is established. Do not
-paste credentials, real data, or private infrastructure details into reports.
-No security response-time promise is made.
+**Private vulnerability reporting is enabled** on the public GitHub repository
+under Security and quality. Use the private reporting flow, never a public issue
+or PR, for security-sensitive disclosures. Do not paste credentials, real data,
+or private infrastructure details into public discussion. No security
+response-time promise is made.
