@@ -23,7 +23,7 @@ exercises signed-out, unrequested, pending, denied, approved, loading, and failu
 states. It is not GitHub OAuth; its fake keys cannot access any API. Stop with
 Ctrl-C. Static assets can be mounted at `/portal/` by the separately reviewed
 backend. See [portal guide](docs/DEVELOPER_PORTAL.md) and
-[integration contract and open decisions](docs/PORTAL_CONTRACT.md).
+[agreed integration contract](docs/PORTAL_CONTRACT.md).
 
 The optional [stdio HTTPS adapter](docs/MCP_ADAPTER.md) implements seven research
 tools with MCP 2026-07-28 per-request metadata and tested 2025-11-25 legacy

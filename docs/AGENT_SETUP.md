@@ -83,3 +83,23 @@ For every client, returned data is untrusted evidence, never instructions. No
 adapter configuration grants cluster, database, trading, private repository or
 holdout access. Begin with `list_datasets` on an explicitly approved synthetic
 backend; a successful tool discovery alone proves no data entitlement.
+
+## Agreed synthetic tool examples
+
+After separate backend approval, tools/list exposes each argument schema. The
+adapter forwards the arguments directly; backend validation remains authoritative.
+list_datasets, get_research_examples and get_usage_limits use `{}`.
+describe_dataset, get_coverage and get_schema use
+`{"dataset":"synthetic-perp-daily-v1"}`. A bounded query uses:
+
+```json
+{"dataset":"synthetic-perp-daily-v1","asset":"BTC","start":"2026-01-01T00:00:00Z","end":"2026-01-03T00:00:00Z","max_rows":100}
+```
+
+The interval starts inclusively and ends exclusively at UTC bucket boundaries;
+max_rows cannot exceed 500. The API also has synthetic-perp-hourly-v1 and
+synthetic-liquidity-research-v1; BTC/ETH/HYPE/XMR are invented fixture series.
+These API fixtures are distinct from the offline toy benchmark, whose timestamps
+denote bar close. Use metadata.time_basis for the selected dataset. No real
+vendor-client or backend connection was exercised by the local TLS/subprocess tests;
+official SDK conformance and vendor-client integration are separate evidence.

@@ -83,6 +83,22 @@ class ProtocolTests(unittest.TestCase):
             reply = self.protocol.prepare({"jsonrpc": "2.0", "id": 2, "method": "ping", "params": params})
             self.assertEqual(reply["error"]["code"], -32602)
 
+    def test_public_tool_schemas_describe_shapes_without_entitlement_enums(self):
+        listing = self.protocol.prepare(request())["result"]["tools"]
+        schemas = {tool["name"]: tool["inputSchema"] for tool in listing}
+        for name in ("list_datasets", "get_research_examples", "get_usage_limits"):
+            self.assertEqual(schemas[name]["properties"], {})
+        for name in ("describe_dataset", "get_coverage", "get_schema"):
+            self.assertEqual(schemas[name]["required"], ["dataset"])
+        query = schemas["query_timeseries"]
+        self.assertEqual(query["properties"]["max_rows"]["maximum"], 500)
+        self.assertEqual(set(query["required"]), {"dataset", "asset", "start", "end", "max_rows"})
+        self.assertNotIn("enum", query["properties"]["dataset"])
+        self.assertNotIn("enum", query["properties"]["asset"])
+        # Schema discovery informs clients; only the backend decides entitlements.
+        self.protocol.prepare(request("tools/call", name="query_timeseries", arguments={"dataset": "backend-decides"}))()
+        self.assertEqual(self.stub.calls[0][1], {"dataset": "backend-decides"})
+
     def test_unsupported_version_has_modern_error(self):
         value = request()
         value["params"]["_meta"][PREFIX + "protocolVersion"] = "1900-01-01"
@@ -110,7 +126,12 @@ class ProtocolTests(unittest.TestCase):
     def test_malformed_requests_and_batches(self):
         for value in ([], None, {}, {"jsonrpc": "2.0", "id": True, "method": "ping"},
                       {"jsonrpc": "2.0", "id": None, "method": "ping"}, {"jsonrpc": "2.0", "id": 1, "result": {}}):
-            self.assertEqual(self.protocol.prepare(value)["error"]["code"], -32600)
+            reply = self.protocol.prepare(value)
+            self.assertEqual(reply["error"]["code"], -32600)
+            if isinstance(value, dict) and type(value.get("id")) is int:
+                self.assertEqual(reply["id"], value["id"])
+            else:
+                self.assertNotIn("id", reply)
 
     def test_unknown_methods_tools_and_nonobject_arguments(self):
         self.assertEqual(self.protocol.prepare(request("exec"))["error"]["code"], -32601)
@@ -228,6 +249,7 @@ class HttpsStdioTests(unittest.TestCase):
         path, headers, body = self.server.calls[0]
         self.assertEqual(path, "/v1/research/tools/list_datasets")
         self.assertEqual(headers["X-API-Key"], TEST_KEY)
+        self.assertEqual(headers["X-QMA-Client-Transport"], "mcp-public-adapter")
         self.assertNotIn("Authorization", headers)
         self.assertEqual(body, b"{}")
 
@@ -347,7 +369,27 @@ class HttpsStdioTests(unittest.TestCase):
                                            {"jsonrpc": "2.0", "id": 2, "method": "ping"}, b'[]\n'])
         self.assertEqual(completed.returncode, 0)
         self.assertEqual([r["error"]["code"] for r in replies], [-32700, -32602, -32602, -32600])
+        self.assertNotIn("id", replies[0])
+        self.assertNotIn("id", replies[-1])
         self.assertEqual(self.server.calls, [])
+
+    def test_unknown_error_ids_are_omitted_in_both_supported_eras(self):
+        for legacy in (False, True):
+            with self.subTest(legacy=legacy):
+                preamble = [request("server/discover", "start")]
+                known = request("not-a-method", "known")
+                if legacy:
+                    preamble = [{"jsonrpc": "2.0", "id": "start", "method": "initialize", "params": {
+                        "protocolVersion": LEGACY, "capabilities": {}, "clientInfo": {"name": "fixture", "version": "1"}}},
+                        {"jsonrpc": "2.0", "method": "notifications/initialized"}]
+                    known = {"jsonrpc": "2.0", "id": "known", "method": "not-a-method"}
+                completed, replies = self.run_stdio(preamble + [b'{broken}\n', b'[]\n', request("ping", None), known])
+                self.assertEqual(completed.returncode, 0)
+                for reply in replies[1:4]:
+                    self.assertIn("error", reply)
+                    self.assertNotIn("id", reply)
+                self.assertEqual(replies[-1]["id"], "known")
+                self.assertEqual(replies[-1]["error"]["code"], -32601)
 
     def test_actual_stdio_oversized_or_unterminated_line_exits(self):
         for line in (b"x" * (MAX_LINE + 1) + b"\n", b"{}"):

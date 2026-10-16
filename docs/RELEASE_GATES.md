@@ -19,8 +19,9 @@ test run is not a research verdict, a hosted release, or authority to trade.
 Developer portal / adapter gates are additive. Local UI and transport acceptance
 does not activate a service. Review Phase 1 and Phase 2 independently using
 [PORTAL_VALIDATION.md](PORTAL_VALIDATION.md) and [MCP_VALIDATION.md](MCP_VALIDATION.md).
-Confirm all proposed nested envelopes, key encoding and research argument schemas
-with the backend owner; prove its CSRF/session, cross-account denial, key expiry,
+Parent-confirmed envelopes and research schemas are in PORTAL_CONTRACT.md. Check
+[integration correction evidence](INTEGRATION_VALIDATION.md), then prove backend
+success-envelope compatibility, CSRF/session, cross-account denial, key expiry,
 atomic rotation/revocation, quotas and audit with synthetic integration tests before
 calling the components integrated. No such integration is claimed here. Public
 hosting, production credentials, real data and deployment require Patrick's

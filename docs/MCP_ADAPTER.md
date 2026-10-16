@@ -24,9 +24,15 @@ object: `list_datasets`, `describe_dataset`, `get_coverage`, `get_schema`,
 `query_timeseries`, `get_research_examples`, `get_usage_limits`. Caller fields never
 choose a URL, method, path, header, filesystem destination, or executable. Backend
 owns argument schema, data authorization, query bounds, quota charging and audit.
-The initial `inputSchema` honestly declares bounded object passthrough: backend
-argument schemas remain an integration decision. Do not infer a dataset parameter
-name, SQL capability or key scope from that intentionally generic schema.
+`omr_mcp/contracts.py` declares per-tool inputSchema from the agreed public contract:
+empty objects for list_datasets/get_research_examples/get_usage_limits; a `dataset`
+string for describe_dataset/get_coverage/get_schema; and dataset, asset, start,
+end, max_rows for query_timeseries. max_rows is 1–500 and end is exclusive.
+Discovery schemas guide clients; the adapter forwards bounded objects without
+duplicating backend validation or dataset entitlement checks. The constant
+`X-QMA-Client-Transport: mcp-public-adapter` header is log attribution only, never
+an identity or authorization signal. See [PORTAL_CONTRACT.md](PORTAL_CONTRACT.md)
+for exact synthetic catalog identities and examples.
 
 Backend success currently requires HTTP 200 with a JSON object. Non-200 responses
 (including redirects), non-JSON, compression, malformed/duplicate/nonfinite JSON,
@@ -56,6 +62,12 @@ Missing required metadata returns `-32602`; unsupported modern versions return
 "complete"` and server identity; discovery/listing include `ttlMs: 0` and
 `cacheScope: "private"`. This adapter advertises tools only; it has no resources,
 prompts, subscriptions, sampling, elicitation, tasks or server-to-client requests.
+
+Uncorrelated parse/invalid-request errors omit `id`; known valid IDs are echoed
+unchanged. Both the [modern schema](https://modelcontextprotocol.io/specification/2026-07-28/schema#jsonrpcerrorresponse)
+and [legacy 2025-11-25 schema](https://modelcontextprotocol.io/specification/2025-11-25/schema#jsonrpcerrorresponse)
+define an optional string/number RequestId, not null. A stdio regression covers
+parse failures, invalid null request IDs, and correlated errors in both eras.
 
 An independent compatibility path implements [legacy 2025-11-25 initialization](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle):
 `initialize` with that exact version, clientInfo and capabilities, followed by
@@ -113,6 +125,6 @@ keys, authorization ledgers, consumption receipts or quotas as part of code roll
 Keep raw restricted data and secrets out of logs/agent transcripts. The adapter
 contains no audit store; the shared API must retain redacted audit records.
 
-Production integration still needs agreed argument/success envelopes, real backend
-negative authorization/expiry/revocation tests, operator credentials, and explicit
+Production integration still needs real backend negative authorization/expiry/revocation
+tests, success-envelope compatibility, operator credentials, and explicit
 activation approval. These are separate from the local transport acceptance tests.

@@ -124,6 +124,7 @@ class ResearchClient:
             connection.sock.settimeout(remaining)
             connection.request("POST", f"/v1/research/tools/{name}", body=payload,
                                headers={"X-API-Key": self.config.key, "Content-Type": "application/json",
+                                        "X-QMA-Client-Transport": "mcp-public-adapter",
                                         "Accept": "application/json", "Accept-Encoding": "identity",
                                         "Connection": "close"})
             response = connection.getresponse()

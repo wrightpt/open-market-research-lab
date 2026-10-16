@@ -61,6 +61,9 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
     });
     await check('key creation renders text safely and clears once-only secret', async () => {
       await scenario('approved'); await textIs('#key-status', 'No keys yet');
+      assert.equal(await page.locator('#key-name').getAttribute('maxlength'), '64');
+      await page.fill('#key-name', 'clé');
+      assert.equal(await page.locator('#key-name').evaluate(node => node.checkValidity()), false);
       await page.fill('#key-name', '<img src=x onerror=alert(1)>');
       await page.locator('#key-form button').click();
       await page.locator('#secret-dialog').waitFor();
@@ -102,6 +105,27 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
       await page.locator('#overview').waitFor({state: 'visible'});
       await page.screenshot({path: 'artifacts/browser/mobile.png', fullPage: true});
       assert.equal(await page.locator('input:not([id]), textarea:not([id]), select:not([id])').count(), 0);
+    });
+    await check('mounted synthetic-test mode uses its own timing and no demo controls', async () => {
+      await page.route('**/portal/api/session', route => route.fulfill({json: {
+        authenticated: false, user: null, csrf_token: 'mock-contract-only', mode: 'synthetic-test'
+      }}));
+      await page.route('**/portal/api/datasets', route => route.fulfill({json: {datasets: [{
+        id: 'synthetic-perp-daily-v1', title: 'Synthetic API contract fixture', synthetic: true,
+        asset: 'BTC', venue: 'NONE', schema_version: 'api-test-v1', coverage: [], fields: [],
+        time_basis: 'UTC bucket boundaries; queries end-exclusive.'
+      }]}}));
+      await page.reload();
+      await page.locator('#test-banner').waitFor();
+      assert.equal(await page.locator('#demo-banner').isVisible(), false);
+      await textIs('#availability-detail', 'distinct from the offline toy benchmark');
+      await page.locator('nav a[href="#account"]').click();
+      assert.equal(await page.locator('#github-login').isVisible(), false);
+      await page.locator('nav a[href="#datasets"]').click();
+      await textIs('#dataset-time-basis', 'end-exclusive');
+      assert.doesNotMatch(await page.locator('#dataset-time-basis').innerText(), /bar close/);
+      await textIs('#dataset-facts', 'api-test-v1');
+      assert.deepEqual(errors, []);
     });
     console.log(`${passed} browser checks passed`);
   } finally {

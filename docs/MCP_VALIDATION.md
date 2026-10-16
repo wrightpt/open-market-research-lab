@@ -32,6 +32,8 @@ wall deadlines, one-call concurrency, cancellation, EOF, and stdout framing.
 
 Setup snippets were checked against local Codex CLI help and official client
 documentation; no real Claude Code/Codex/OpenCode/ChatGPT account integration was
-activated. Backend schemas and proposed envelopes still require contract review;
+activated. At this checkpoint backend schemas and proposed envelopes still required contract review;
 production authorization, key expiry/revocation and quota/audit enforcement are
 backend acceptance gates. Hosted CI has not run on these unpushed commits.
+The subsequent parent-approved contract corrections and final test counts are in
+[INTEGRATION_VALIDATION.md](INTEGRATION_VALIDATION.md).

@@ -1,10 +1,10 @@
 # Portal contract v1 — frontend/backend integration boundary
 
-Status: public synthetic UI implementation contract, 2026-10-16. The routes and
-mutation headers below are agreed. **Nested response shapes marked proposed are
-mock assumptions awaiting backend review**, not a claim that the backend implements
-them. No private backend source, schema, or history was consulted. This document
-is the collaboration boundary; do not build a second production authorization layer.
+Status: sanitized frontend/backend contract, confirmed through parent integration
+review on 2026-10-16. Routes, account states, key envelopes, usage fields and tool
+argument shapes below are agreed. No private backend source, schema, or history
+was consulted. This is the collaboration boundary; do not build a second production
+authorization layer. Full backend mount/authorization tests are a separate receipt.
 
 The backend mounts the static assets at `/portal/` and owns sessions, GitHub OAuth,
 CSRF generation/validation, access decisions, API-key security, quotas, and audit.
@@ -17,28 +17,31 @@ key secrets stay in memory and visible DOM only; no browser storage or URL param
 | Method and route | Request | Response consumed by UI |
 | --- | --- | --- |
 | GET `/portal/api/session` | none | `{authenticated, user: {id, login, access_status} \| null, csrf_token, mode}` |
-| GET `/portal/api/datasets` | none | `{datasets: [metadata]}`; metadata proposal below |
+| GET `/portal/api/datasets` | none | `{datasets: [metadata]}`; metadata projection below |
 | GET `/portal/api/keys` | none | `{keys: [{id, name, scopes, expires_at, created_at, revoked}]}`; never secrets |
-| POST `/portal/api/access-requests` | **proposed** `{purpose: string}` | **proposed** `{access_status: "pending"}`; UI then refreshes session |
-| POST `/portal/api/keys` | `{name, scopes: ["research:read"], expires_in_days: 30}` | **proposed** `{key: key_metadata, secret: string}` |
-| POST `/portal/api/keys/{id}/rotate` | `{}` | **proposed** `{key: new_key_metadata, secret: string}`; old key revoked atomically by backend |
-| DELETE `/portal/api/keys/{id}` | no body | **proposed** 204, or 200 JSON; UI refreshes key list |
-| GET `/portal/api/usage` | none | `{limits, usage}`; nested proposal below |
-| POST `/portal/api/logout` | `{}` | **proposed** 204, or 200 JSON; UI discards secrets and refreshes session |
+| POST `/portal/api/access-requests` | `{purpose: string}` | `{access_status: "pending"}`; UI then refreshes session |
+| POST `/portal/api/keys` | `{name, scopes: ["research:read"], expires_in_days: 30}` | `{key: key_metadata, secret: string}` |
+| POST `/portal/api/keys/{id}/rotate` | `{}` | `{key: new_key_metadata, secret: string}`; old key revoked atomically by backend |
+| DELETE `/portal/api/keys/{id}` | no body | 200 `{revoked: true}`; UI refreshes key list |
+| GET `/portal/api/usage` | none | `{limits, usage}`; nested fields below |
+| POST `/portal/api/logout` | `{}` | 204, or 200 JSON; UI discards secrets and refreshes session |
 | GET `/portal/auth/github` | navigation | backend OAuth redirect; demo only shows a mock-login notice |
 
-`access_status`: proposed `none`, `pending`, `approved`, `denied`. Unknown values
-fail closed to an unavailable state. `mode`: `demo` for the loopback preview;
-proposed `production` for a separately configured backend. Authentication alone is
-not approval. Hidden/disabled controls are convenience, never authorization.
+`access_status`: `none`, `pending`, `approved`, `denied`. Unknown values fail closed
+to unavailable. `mode: demo` belongs only to the standalone loopback fixture and
+its scenario selector. `mode: synthetic-test` labels the backend account/key
+prototype, hides that selector, and does not claim live GitHub OAuth is configured.
+Only a separately configured `production` mode presents the real GitHub sign-in
+link. Authentication alone is not approval. Controls never implement authorization.
+Key names are nonempty printable ASCII, at most 64 characters; UI and demo enforce
+that input contract. Key scope and expiry remain research:read and 30 days.
 
-Errors: proposed `{error: {code, message}}` with HTTP 400/401/403/409/429/5xx. UI
+Errors: `{error: {code, message}}` with HTTP 400/401/403/409/429/5xx. UI
 shows fixed status-based guidance, never raw exception text, headers, or payloads.
 All responses containing session/key/account information require `Cache-Control:
-no-store`; redirects are not accepted by browser API fetches. A 401 clears local
-account state; a 403 refreshes approval before allowing another key action.
+no-store`; redirects are not accepted by browser API fetches. Mutation 401/403 responses trigger a fresh session check before another key action.
 
-## Proposed sanitized metadata
+## Sanitized catalog metadata
 
 ```json
 {
@@ -48,6 +51,8 @@ account state; a 403 refreshes approval before allowing another key action.
   "asset": "TOY-USD",
   "venue": "NONE",
   "description": "Deterministic engineering fixtures, not market observations.",
+  "schema_version": 1,
+  "time_basis": "UTC bar close; features available at that close; next-row open execution",
   "granularity": "1h",
   "freshness": "Frozen fixture; no live updates",
   "retention": "Versioned source fixture; immutable v1",
@@ -59,15 +64,20 @@ account state; a 403 refreshes approval before allowing another key action.
 }
 ```
 
-The demo returns both split identities and all ten fields from public fixture
+This example describes only the offline toy dataset. The demo returns both split identities and all ten fields from public fixture
 metadata, never holdout outcomes. Phase 1 presents synthetic records only. Unknown
 or non-synthetic catalog records are withheld with an explicit status notice.
 Metadata contains no storage names, internal hostnames, backend tables, account
 identifiers, or acquisition endpoints. Dataset details come from this catalog;
 there is no invented dataset-detail route.
 
-Proposed usage values are nonnegative integers:
-`limits: {requests_per_day, rows_per_request}` and
+The UI renders `schema_version` and the dataset's own `time_basis` dynamically.
+Never apply the toy bar-close convention to API fixtures. Backend synthetic
+timeseries use UTC bucket boundaries and end-exclusive queries. The catalogs
+are distinct; never attach toy CSV hashes or coverage to an API dataset ID.
+
+Usage values are nonnegative integers:
+`limits: {requests_per_day, requests_per_minute, rows_per_request}` and
 `usage: {requests_today, rows_today, resets_at}` (UTC timestamp). UI never invents
 quota values for absent fields; it shows unavailable. Backend is authoritative.
 
@@ -80,7 +90,7 @@ Scenarios: anonymous, unrequested, approved, pending, denied, loading, failure. 
 state are throwaway in-memory mock values. Mock key strings cannot access any API.
 `/portal/auth/github` must never impersonate real GitHub login in this preview.
 
-## Shared research transport (Phase 2)
+## Shared research transport
 
 Only POST `/v1/research/tools/{name}` with a JSON arguments object and `X-API-Key`
 is agreed. Names: `list_datasets`, `describe_dataset`, `get_coverage`, `get_schema`,
@@ -88,14 +98,27 @@ is agreed. Names: `list_datasets`, `describe_dataset`, `get_coverage`, `get_sche
 schema, authorization, query/row/concurrency bounds, and audit. The adapter does
 not translate to SQL, inspect storage, or accept arbitrary paths/URLs/methods.
 
-**Open integration items:** confirm metadata fields, key creation/rotation secret
-envelope, access-request body/status vocabulary, usage units/reset field, and
-research-tool argument schemas. The initial adapter forwards bounded object
-arguments without claiming backend-specific validation. Contract tests can verify
-these proposals; they cannot certify backend integration before that review.
+The agreed argument shapes are:
 
-Phase 2 additionally requires confirmation that research success is HTTP 200 with
-a JSON object, and issued key strings are 16–2048 non-space printable ASCII
-characters. The local adapter rejects other success envelopes and key encodings.
-No assumption about backend tool argument field names is embedded. See
-[MCP_ADAPTER.md](MCP_ADAPTER.md) for exact transport/protocol limits.
+| Tools | JSON arguments |
+| --- | --- |
+| list_datasets, get_research_examples, get_usage_limits | `{}` |
+| describe_dataset, get_coverage, get_schema | `{"dataset":"synthetic-perp-daily-v1"}` |
+| query_timeseries | `{"dataset":"synthetic-perp-daily-v1","asset":"BTC","start":"2026-01-01T00:00:00Z","end":"2026-01-03T00:00:00Z","max_rows":100}` |
+
+`max_rows` is at most 500; start is inclusive and end exclusive at UTC bucket
+boundaries. Known API IDs are `synthetic-perp-daily-v1`,
+`synthetic-perp-hourly-v1`, and `synthetic-liquidity-research-v1`. BTC, ETH, HYPE
+and XMR are names for invented fixture series, not real market observations.
+These examples are not entitlements: backend owns validation, asset availability,
+schema enforcement, authorization, limits and audit. No real data is admitted.
+
+`omr_mcp/contracts.py` exposes useful inputSchema for each tool. The adapter
+forwards bounded arguments; it does not enforce dataset entitlements or duplicate
+query authorization. It sends `X-QMA-Client-Transport: mcp-public-adapter` for log
+attribution only. The backend must never trust that header as identity or permission.
+
+The adapter accepts HTTP 200 JSON-object results and 16–2048 printable non-space
+ASCII key strings. Its tests prove this transport boundary against a generated
+local TLS fixture, not a real backend or vendor client. Parent will run integrated
+backend tests separately. See [MCP_ADAPTER.md](MCP_ADAPTER.md) for exact limits.

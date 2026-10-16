@@ -5,6 +5,7 @@ import threading
 from . import __version__
 from .bounds import MAX_REQUEST, MAX_RESPONSE, encode
 from .client import TOOLS, TransportError
+from .contracts import INPUT_SCHEMAS
 
 MODERN = "2026-07-28"
 LEGACY = "2025-11-25"
@@ -85,8 +86,8 @@ class Protocol:
         if method == "tools/list":
             if params.get("cursor") is not None:
                 return error(identifier, -32602, "Pagination is not supported")
-            listing = {"tools": [{"name": name, "description": description + " Backend owns argument validation and access; JSON object passthrough.",
-                                  "inputSchema": {"type": "object", "additionalProperties": True},
+            listing = {"tools": [{"name": name, "description": description + " Backend owns validation and authorization; examples confer no entitlement.",
+                                  "inputSchema": INPUT_SCHEMAS[name],
                                   "annotations": {"readOnlyHint": True, "openWorldHint": True}}
                                  for name, description in TOOLS.items()]}
             if modern:
