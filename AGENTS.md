@@ -22,6 +22,16 @@ SQLite receipts and append-only events, and do not connect wallets, public
 payments, real data, hosts, clusters or deployment to it without a separate
 release decision and verification. Code tests do not grant such authority.
 
+## x402 fixture-sandbox authority boundary
+
+The x402-shaped local HTTP fixture is documented in docs/X402_SANDBOX.md.
+It is separate from the Commons and portal servers and must never be exposed
+publicly or wired to production identities, payment processors, wallets,
+market data or infrastructure. It uses in-process ephemeral fake JWT/HMAC
+fixtures that are NOT an OAuth resource server or a production facilitator.
+Keep raw bearer/proof tokens out of files, prompts and output. Passing tests
+or merging source never permits real charges or live agent onboarding.
+
 ## Agent onboarding
 
 The local Commons evidence MVP is documented in `docs/COMMONS_MVP.md` and

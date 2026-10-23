@@ -45,6 +45,21 @@ See [the offline metering pilot guide](docs/METERING_PILOT.md) for pricing,
 state transitions, test coverage and separate release gates. The CLI's fixture
 identity is not a customer login or real payment authorization.
 
+## x402 v2-shaped zero-funds sandbox
+
+A separate localhost-only test harness exercises authenticated development
+fixture tenants, HTTP 402 payment challenges, fake signed proofs, replay denial,
+per-tenant budgets and durable receipts. No actual tokens, USDC, wallet,
+identity provider or network settlement exists, and the sandbox is **not**
+connected to the existing portal, Commons HTTP app or production cluster.
+
+    python3 -m research_commons.sandbox_demo
+    python3 -m research_commons.sandbox_demo --sku synthetic_backtest.v1
+
+See [local payment sandbox and threat model](docs/X402_SANDBOX.md). The demo
+creates ephemeral fake bearer credentials only inside the test process and
+stops its loopback HTTP server immediately after exercising the flow.
+
 ## Developer portal preview
 
 ```bash
