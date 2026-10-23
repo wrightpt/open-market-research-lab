@@ -2,6 +2,13 @@
 
 **Status: local, read-only prototype. Not deployed. Not connected to ChatGPT yet.**
 
+For the proposed invitation-only, OAuth-linked ChatGPT pilot, read
+[Private Connector Pilot](../../docs/PRIVATE_CONNECTOR_PILOT.md). The separate
+`pilot-access-policy.mjs` module is **unit-tested policy scaffolding only**:
+it does not verify tokens, provide authentication, alter the MCP server, or
+authorize deployment. The current anonymous loopback prototype must not be
+advertised as an authenticated per-user connector.
+
 This standalone package demonstrates the Model Context Protocol (MCP) tools we
 would eventually publish in the ChatGPT/Codex plugin directory. It uses **only**
 the public `synthetic-liquidity-v1` development CSV in this repository. It
