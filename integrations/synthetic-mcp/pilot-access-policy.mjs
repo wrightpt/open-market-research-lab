@@ -69,8 +69,9 @@ export function evaluateVerifiedResearchAccess({
 
   if (!request || typeof request !== "object" ||
       !PILOT_TOOLS.includes(request.tool) ||
-      (request.tool !== "list_datasets" &&
-       request.datasetId !== PILOT_DATASET_ID) ||
+      (request.tool === "list_datasets"
+        ? (request.datasetId !== undefined && request.datasetId !== PILOT_DATASET_ID)
+        : request.datasetId !== PILOT_DATASET_ID) ||
       !Array.isArray(account.datasets) ||
       !account.datasets.includes(PILOT_DATASET_ID)) {
     return deny("not_entitled");
