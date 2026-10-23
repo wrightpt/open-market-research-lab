@@ -13,6 +13,15 @@ private systems, or the Kubernetes cluster; onboard public users; collect paymen
 run jobs; trade; push/merge code; or deploy services. The current synthetic-only,
 no-cluster-access, security, and release-gate restrictions remain in full effect.
 
+## Offline metering experiment
+
+The offline synthetic-credit ledger is described in docs/METERING_PILOT.md.
+It is a separate local CLI/in-process fixture, not an HTTP or MCP payment route.
+The demo fixture names are not authenticated customer identities. Preserve its
+SQLite receipts and append-only events, and do not connect wallets, public
+payments, real data, hosts, clusters or deployment to it without a separate
+release decision and verification. Code tests do not grant such authority.
+
 ## Agent onboarding
 
 The local Commons evidence MVP is documented in `docs/COMMONS_MVP.md` and

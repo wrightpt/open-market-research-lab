@@ -48,6 +48,18 @@ Only the existing bounded development engine is callable. Uploaded reports are
 JSON data, retained as unverified until a complete report replay matches. No code
 uploads, external URLs, holdout evaluation, payment calls or worker launch exist.
 
+## Offline metering fixture boundary
+
+The separate local ledger under artifacts/ uses SQLite transactions, an exclusive
+POSIX process lock, per-tenant fixture budgets, one-time execution claims and
+append-only hash-chained receipts. An interrupted claimed operation becomes
+uncertain on restart rather than silently repeating a potentially completed job.
+These protections are local correctness checks, not externally witnessed payment
+custody or tamper-proof storage against the OS owner. The CLI selects simulated
+fixture principals and never authenticates paying users. No new HTTP/MCP route,
+payment processor, wallet, public identity, live dataset, execution broker or
+production access was added. See docs/METERING_PILOT.md for bounds and gates.
+
 ## Stdio HTTPS adapter boundary
 
 The optional stdio adapter is a separate outbound HTTPS boundary documented in
