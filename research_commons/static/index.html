@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local workspace for inspectable, reproducible synthetic research.">
+  <title>Open Research Commons</title>
+  <link rel="stylesheet" href="/commons/style.css">
+  <script type="module" src="/commons/app.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<aside class="sidebar">
+  <a class="brand" href="#studies"><span class="brand-mark">or<span>c</span></span><span>Open Research<br>Commons</span></a>
+  <div class="rail-label">The research workspace</div>
+  <nav aria-label="Main navigation">
+    <a href="#studies" data-nav="studies"><span>01</span> Research register <b>↗</b></a>
+    <a href="#dataset" data-nav="dataset"><span>02</span> Dataset &amp; method <b>↗</b></a>
+    <a href="#guide" data-nav="guide"><span>03</span> Field guide <b>↗</b></a>
+  </nav>
+  <div class="rail-note"><span class="asterisk" aria-hidden="true">✳</span><p>A useful result is one<br>someone can question.</p><small>KEEP THE EVIDENCE.<br>INCLUDING THE FAILURES.</small></div>
+  <div class="persona-panel"><label for="persona">Local demo persona</label><select id="persona"><option value="researcher">Local researcher</option><option value="reviewer">Local reviewer</option></select><p>Exercise both roles. These are local personas, not independent identities.</p></div>
+  <div class="rail-footer"><span class="live-dot"></span> Local workspace <span>v0.1</span></div>
+</aside>
+<div class="page-shell">
+  <header class="topbar"><span>COMMONS <span class="slash">/</span> <strong id="breadcrumb">RESEARCH REGISTER</strong></span><span class="mode-tag">SYNTHETIC ONLY</span></header>
+  <div class="scope-note">Original synthetic fixtures · local repeatability · no real-market conclusions</div>
+  <div id="notice" role="status" aria-live="polite" hidden></div>
+  <main id="main" tabindex="-1">
+    <section id="studies-view" class="view">
+      <div class="hero"><div><p class="eyebrow">An open notebook for better questions</p><h1>Good research<br>leaves a <em>trail.</em></h1><p class="intro">Write down the claim. Keep the evidence.<br>Make the result possible to reproduce.</p></div><div class="hero-stamp"><div class="orbit" aria-hidden="true"><span>↗</span></div><p>OBSERVE → TEST<br>REPRODUCE → REVIEW</p></div></div>
+      <div id="stats" class="stats" aria-label="Workspace totals"></div>
+      <div class="section-heading"><div><p class="eyebrow">THE REGISTER</p><h2>Research, with receipts.</h2></div><a class="button primary" href="#new">New study <span aria-hidden="true">＋</span></a></div>
+      <div class="toolbar"><label class="search-label" for="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search claims, methods, or evidence…" aria-label="Search studies"></label><label class="filter-label" for="filter">Status <select id="filter"><option value="all">All studies</option><option value="draft">Draft</option><option value="submitted">Awaiting replay</option><option value="reproduced">Replay matched</option><option value="disputed">Disputed</option><option value="failed">Failed attempt</option></select></label></div>
+      <div id="study-list" class="study-list" aria-live="polite"><p class="empty-state">Loading your research register…</p></div>
+      <div class="register-foot"><span id="result-count"></span><span>Negative evidence belongs here, too.</span></div>
+    </section>
+
+    <section id="new-view" class="view" hidden>
+      <a class="back-link" href="#studies">← Research register</a><p class="eyebrow">START WITH A QUESTION</p><h1 id="form-title">Open a new study.</h1><p class="intro">Record the claim and its limits before producing evidence.<br>Each revision keeps a link to what came before.</p>
+      <form id="study-form">
+        <div class="form-section"><div class="form-section-title"><span>01</span><h2>The claim</h2></div>
+          <label for="study-title">Study title</label><input id="study-title" name="title" required maxlength="120" placeholder="What would you like to understand?">
+          <label for="hypothesis">Hypothesis</label><textarea id="hypothesis" name="hypothesis" required minlength="20" maxlength="1200" rows="3"></textarea>
+          <label for="criteria">Acceptance and rejection criteria</label><textarea id="criteria" name="criteria" required minlength="20" maxlength="1200" rows="3"></textarea>
+          <label for="limitations">Known limitations</label><textarea id="limitations" name="limitations" required minlength="20" maxlength="2000" rows="3"></textarea>
+        </div>
+        <div class="form-section"><div class="form-section-title"><span>02</span><h2>The method</h2></div><p class="muted">Synthetic liquidity fixture · development only · bounded liquidity guard · next-open execution</p>
+          <div class="form-grid"><div><label for="lookback">Lookback (bars)</label><input id="lookback" type="number" min="4" max="48" step="1" required></div><div><label for="spread">Spread ratio ≥</label><input id="spread" type="number" min="1" max="5" step="0.1" required></div><div><label for="depth">Depth ratio ≤</label><input id="depth" type="number" min="0.1" max="1" step="0.01" required></div><div><label for="oi">OI decline ≥ (fraction)</label><input id="oi" type="number" min="0.001" max="0.5" step="0.001" required></div><div><label for="signals">Signals required</label><input id="signals" type="number" min="1" max="3" step="1" required></div><div><label for="fee">Fee per fill (bps)</label><input id="fee" type="number" min="0" max="100" step="0.1" required></div><div><label for="slippage">Slippage per fill (bps)</label><input id="slippage" type="number" min="0" max="100" step="0.1" required></div><div><label for="trials">Development trials disclosed</label><input id="trials" type="number" min="1" max="10000" step="1" required></div></div>
+          <p class="fineprint">Other engine settings stay visible in the saved submission. The public development fixture is not an unseen sample. This records research procedure, not a market-performance claim.</p>
+        </div>
+        <div class="form-actions"><p id="parent-note" class="muted">Saved studies are immutable. Fork a study to revise it.</p><button class="button primary" type="submit">Save study <span aria-hidden="true">→</span></button></div>
+      </form>
+    </section>
+
+    <section id="study-view" class="view" hidden><div id="study-detail"></div></section>
+
+    <section id="dataset-view" class="view" hidden>
+      <p class="eyebrow">ONE DATASET. A CLEAR BOUNDARY.</p><h1>Know your <em>inputs.</em></h1><p class="intro">Deterministic by construction. Inspectable by design.<br>No private sources or real-market observations.</p>
+      <div class="dataset-layout"><article class="paper"><span class="badge">SYNTHETIC / V1</span><h2>Liquidity deterioration lab</h2><p>Scripted spread widening, depth depletion and open-interest changes, with missing observations, false alarms and unwarned shocks.</p><dl id="dataset-facts" class="facts"></dl></article><aside class="note-card"><p class="eyebrow">WHAT THE DATA CAN TELL YOU</p><h3>Does the procedure work?</h3><p>Use these fixtures to inspect causality, accounting, provenance and reproduction. They do not establish a profitable strategy.</p><p>Missing observations stay unknown. Fees and adverse slippage apply to every fill.</p></aside></div>
+      <div class="section-heading"><h2>The fixed execution contract</h2><span class="eyebrow">LIQUIDITY GUARD V1</span></div><div class="three-column"><article><span class="step-number">01</span><h3>Observe at close.</h3><p>Features use information available at the bar close. Prior-window medians exclude the current bar.</p></article><article><span class="step-number">02</span><h3>Act at next open.</h3><p>Decisions first execute at the following bar’s open. A terminal liquidation is separately recorded.</p></article><article><span class="step-number">03</span><h3>Keep the comparison.</h3><p>Always-cash and always-long controls use the same costs. The full decisions, fills and equity trail travel with the report.</p></article></div>
+    </section>
+
+    <section id="guide-view" class="view" hidden>
+      <p class="eyebrow">A SHORT FIELD GUIDE</p><h1>Make a claim<br><em>someone can check.</em></h1>
+      <div class="guide-step"><span>01</span><div><h2>Write before you run.</h2><p>Create a study with a hypothesis, acceptance criteria and limitations. Select bounded method settings. Saved studies are immutable; a revision becomes a linked fork.</p></div></div>
+      <div class="guide-step"><span>02</span><div><h2>Leave a complete trail.</h2><p>Run the local development experiment or download the submission, run it with the benchmark CLI, and import the resulting report. A submitted report is unverified until replayed.</p><pre>python3 -m market_lab backtest submissions/your-study.json \
+  --output artifacts/your-study-report.json</pre><p>Place the downloaded submission under <code>submissions/</code> in this same checkout. Import the report into its original study. Exported evidence packages also include the original report.</p></div></div>
+      <div class="guide-step"><span>03</span><div><h2>Reproduce, then disagree.</h2><p>Switch to the other local demo persona and replay. The service compares the entire report, not just its headline metrics. Mismatches retain both versions. Record your review and any conflicts separately.</p></div></div>
+      <div class="guide-step"><span>04</span><div><h2>Take the evidence with you.</h2><p>Download a JSON evidence package with the study, both reports, hashes, review history and attempt records. The local journal retains every accepted mutation across restarts.</p></div></div>
+      <div class="boundary"><h3>What a matched replay means</h3><p>The same engine produced the same output from the same synthetic inputs. It does not establish independent review, unseen-data validity, market predictability or trading readiness. Demo personas are not real accounts.</p></div>
+    </section>
+  </main>
+  <footer><span>Open Research Commons</span><span>Evidence over assertion. <span class="footer-mark">↗</span></span></footer>
+</div>
+</body>
+</html>

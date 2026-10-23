@@ -15,6 +15,13 @@ no-cluster-access, security, and release-gate restrictions remain in full effect
 
 ## Agent onboarding
 
+The local Commons evidence MVP is documented in `docs/COMMONS_MVP.md` and
+`docs/COMMONS_API.md`. Its `research_commons` package has a separate literal-loopback
+server and an append-only journal under `artifacts/`. It evaluates development
+fixtures only. Preserve every attempt and journal file; do not expose the server
+through a public bind, proxy or tunnel. Demo personas are not real authentication.
+The broader proposal's hosting, data, payment and operational gates still apply.
+
 Claude Code, Codex, and OpenCode use the same workflow; no provider-specific
 configuration, permission bypass, MCP server, or global installation is needed.
 

@@ -35,6 +35,19 @@ or tab hiding. Explicit clipboard copies remain the user's responsibility.
 The production backend must supply secure sessions, OAuth, authorization and
 no-store responses; hiding a UI control is never an access-control boundary.
 
+## Commons MVP boundary
+
+The separate Commons MVP also binds literal loopback, enforces exact Host/Origin,
+uses expiring in-memory sessions and CSRF, and caps requests at 2 MB. Its two local
+personas are deliberately selectable demonstrations, not identities suitable for
+multi-user access. Never publish, tunnel or production-mount this local server.
+Its single-writer journal uses POSIX file locking, atomic file installation and
+hash-linked events under `artifacts/`; it provides local durability and corruption
+detection, not tamper-proof custody. Preserve the complete journal on backup.
+Only the existing bounded development engine is callable. Uploaded reports are
+JSON data, retained as unverified until a complete report replay matches. No code
+uploads, external URLs, holdout evaluation, payment calls or worker launch exist.
+
 ## Stdio HTTPS adapter boundary
 
 The optional stdio adapter is a separate outbound HTTPS boundary documented in

@@ -12,6 +12,23 @@ release policies. The developer portal adds a loopback mock preview; its login,
 keys, approval, and quotas are demonstrations. No real datasets or public service
 are supplied. The offline benchmark remains independent of all portal components.
 
+## Open Research Commons local MVP
+
+```bash
+python3 -m research_commons --seed-demo
+```
+
+Open `http://127.0.0.1:8787/commons/` to create synthetic studies, run or import
+development evidence, replay reports, record reviews, and export evidence packages.
+The append-only local journal preserves studies across restarts. Two labeled
+examples demonstrate a matching replay and a disputed report. Local researcher
+and reviewer personas demonstrate workflow separation, not independent identities.
+The existing benchmark and developer portal remain separate entry points.
+
+Read [the MVP guide](docs/COMMONS_MVP.md) and [HTTP contract](docs/COMMONS_API.md).
+This is a local, synthetic-only application; it supplies no public accounts,
+payments, arbitrary execution, real data or production hosting.
+
 ## Developer portal preview
 
 ```bash
