@@ -32,6 +32,18 @@ fixtures that are NOT an OAuth resource server or a production facilitator.
 Keep raw bearer/proof tokens out of files, prompts and output. Passing tests
 or merging source never permits real charges or live agent onboarding.
 
+## Optional isolated OAuth2/OIDC and upstream x402 interoperability
+
+Read docs/OIDC_OFFICIAL_X402_LAB.md. In explicitly authorized local developer
+work only, devtools/keycloak_oidc_integration.py may start and stop ONE
+self-owned Keycloak development container bound to literal 127.0.0.1, and
+devtools/x402_official may contact the fixed x402.org testnet facilitator for
+read-only /supported and /verify of a deliberately invalid signature.
+No /settle, transfers, wallets, production identities, external users,
+licensed datasets, tunnels, Kubernetes or Vault access are authorized.
+This permission does not extend to the benchmark engine, public examples,
+an unrelated agent's tools or production infrastructure.
+
 ## Agent onboarding
 
 The local Commons evidence MVP is documented in `docs/COMMONS_MVP.md` and
