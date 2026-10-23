@@ -60,6 +60,19 @@ fixture principals and never authenticates paying users. No new HTTP/MCP route,
 payment processor, wallet, public identity, live dataset, execution broker or
 production access was added. See docs/METERING_PILOT.md for bounds and gates.
 
+## Zero-funds x402-shaped HTTP fixture
+
+The optional research_commons.sandbox_http server binds literal 127.0.0.1
+and accepts only ephemeral HMAC-signed test bearer identities and fake payment
+proofs. It is not connected to existing portals or services, has no public
+minting, onchain settlement, wallet, webhook, database privilege or Kubernetes
+identity, and must not be reverse-proxied, tunneled or deployed. An exclusive
+ledger claim and separate hash-chained proof registry reject proof replays and
+cross-tenant reads. Restart makes in-flight execution uncertain; no automatic
+retry occurs. This is a correctness/security experiment, NOT real OAuth/OIDC,
+x402 facilitator verification or payment custody. Review docs/X402_SANDBOX.md
+for limitations and separate financial/production approval gates.
+
 ## Stdio HTTPS adapter boundary
 
 The optional stdio adapter is a separate outbound HTTPS boundary documented in
