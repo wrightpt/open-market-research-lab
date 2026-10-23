@@ -3,6 +3,16 @@
 This public repository is a locally runnable synthetic-data engineering benchmark. Read README.md,
 DATA_POLICY.md, SECURITY.md, docs/ARCHITECTURE.md, and docs/RELEASE_GATES.md first.
 
+## Proposed future research network (non-authoritative)
+
+For the proposed Open Research Commons collaboration and commercial research service,
+read [docs/OPEN_RESEARCH_COMMONS_SPEC.md](docs/OPEN_RESEARCH_COMMONS_SPEC.md).
+This is a product/business proposal, **not** an implemented capability, change to
+these contributor instructions, or authorization to access external data, secrets,
+private systems, or the Kubernetes cluster; onboard public users; collect payment;
+run jobs; trade; push/merge code; or deploy services. The current synthetic-only,
+no-cluster-access, security, and release-gate restrictions remain in full effect.
+
 ## Agent onboarding
 
 Claude Code, Codex, and OpenCode use the same workflow; no provider-specific
