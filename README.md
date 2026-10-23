@@ -29,6 +29,22 @@ Read [the MVP guide](docs/COMMONS_MVP.md) and [HTTP contract](docs/COMMONS_API.m
 This is a local, synthetic-only application; it supplies no public accounts,
 payments, arbitrary execution, real data or production hosting.
 
+## Offline metering pilot (synthetic credits only)
+
+A separate, operator-only fixture ledger now demonstrates fixed per-request
+prices, atomic tenant budgets, failure-safe reservations, idempotent backtests,
+refunds and durable audit receipts. It makes **no real charges** and is not
+exposed through HTTP, MCP or Kubernetes. To inspect its deliberately fake
+accounting, run:
+
+    python3 -m research_commons.offline_demo quote
+    python3 -m research_commons.offline_demo purchase --key demo-sample-0001
+    python3 -m research_commons.offline_demo balance
+
+See [the offline metering pilot guide](docs/METERING_PILOT.md) for pricing,
+state transitions, test coverage and separate release gates. The CLI's fixture
+identity is not a customer login or real payment authorization.
+
 ## Developer portal preview
 
 ```bash
