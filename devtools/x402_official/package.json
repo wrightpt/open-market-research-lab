@@ -1,0 +1,16 @@
+{
+  "name": "orc-x402-official-read-only-facilitator-probe",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Optional dev-only official x402 SDK verify / supported probe; /settle forbidden",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node probe.mjs"
+  },
+  "dependencies": {
+    "@x402/core": "2.28.0"
+  }
+}

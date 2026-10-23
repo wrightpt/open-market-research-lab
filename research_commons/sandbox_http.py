@@ -23,10 +23,12 @@ class SandboxHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = False
 
     def __init__(self, root=ROOT, *, port=0, directory="artifacts/x402-sandbox",
-                 registry=None, clock=None):
+                 registry=None, clock=None, identity_verifier=None):
         self.registry = registry or FixtureRegistry()
         self.ledger = OfflineLedger(root, self.registry, directory=directory, clock=clock)
-        self.issuer = DevTokenIssuer(now=self.ledger.clock)
+        # An explicitly injected verified OIDC issuer replaces fixture JWTs only in
+        # the isolated development integration. No auto-discovery from untrusted requests.
+        self.issuer = identity_verifier or DevTokenIssuer(now=self.ledger.clock)
         try:
             self.exchange = SandboxExchange(self.ledger, self.issuer)
             super().__init__(("127.0.0.1", port), SandboxHandler)
@@ -96,7 +98,7 @@ class SandboxHandler(BaseHTTPRequestHandler):
 
     def principal(self):
         auth = self.headers.get_all("Authorization", [])
-        if len(auth) != 1 or not auth[0].startswith("Bearer ") or len(auth[0]) > 2048:
+        if len(auth) != 1 or not auth[0].startswith("Bearer ") or len(auth[0]) > 8192:
             raise IdentityError("development bearer token required")
         return self.server.issuer.verify(auth[0][7:], self.server.registry)
 

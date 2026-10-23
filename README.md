@@ -60,6 +60,23 @@ See [local payment sandbox and threat model](docs/X402_SANDBOX.md). The demo
 creates ephemeral fake bearer credentials only inside the test process and
 stops its loopback HTTP server immediately after exercising the flow.
 
+## Isolated development OIDC + official x402 SDK checks
+
+An opt-in interoperability lab can start a **separate, local Keycloak provider**,
+verify its signed OAuth2 client-credentials tokens via JWKS, and exercise two
+isolated synthetic tenants with the zero-funds x402 sandbox. A second optional
+Node.js harness uses the official @x402/core SDK to query the public development
+facilitator's capabilities and check that an intentionally invalid signature
+is rejected. It **never calls /settle or moves real funds**.
+
+    python3 -m devtools.keycloak_oidc_integration --run
+    npm ci --ignore-scripts --no-audit --prefix devtools/x402_official
+    npm run --prefix devtools/x402_official check
+
+See [OIDC and official x402 integration evidence](docs/OIDC_OFFICIAL_X402_LAB.md).
+These commands require explicit development-only dependencies and are not part
+of the default benchmark/CI, public hosting or production release.
+
 ## Developer portal preview
 
 ```bash

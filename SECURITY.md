@@ -73,6 +73,25 @@ retry occurs. This is a correctness/security experiment, NOT real OAuth/OIDC,
 x402 facilitator verification or payment custody. Review docs/X402_SANDBOX.md
 for limitations and separate financial/production approval gates.
 
+## Optional standalone OIDC and official x402 verification lab
+
+Separate Keycloak container: ephemeral localhost development realm, two
+random service-account secrets, RS256 JWKS and OAuth2 client-credentials.
+Keys/secrets are never committed; realm imports are removed after owned
+container shutdown. The sandbox accepts only a strict, explicitly injected
+loopback OIDC verifier, with issuer/JWKS URL allowlisting, RS256 signature,
+resource audience, scopes, time limits, and server-owned client→tenant
+mapping. The original fake-token sandbox remains default for its unit tests.
+
+Optional official @x402/core SDK integration contacts only fixed testnet
+facilitator /supported and read-only /verify using an invalid signature.
+It explicitly has **no settlement pathway**; /settle can commit real value
+and is forbidden until a separate approved financial/security gate.
+Development tokens or mock receipts grant no permissions to Kubernetes,
+Vault, private datasets, agents, trading, production billing or ingress.
+No reverse proxy, persistent public port or service deployment is created.
+See docs/OIDC_OFFICIAL_X402_LAB.md for exact limits and review gates.
+
 ## Stdio HTTPS adapter boundary
 
 The optional stdio adapter is a separate outbound HTTPS boundary documented in
