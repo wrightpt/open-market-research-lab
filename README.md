@@ -97,6 +97,10 @@ supplies neither. [Agent setup](docs/AGENT_SETUP.md) keeps keys out of prompts a
 committed configs. Its offline HTTPS tests require the local `openssl` binary;
 the Python runtime and benchmark remain standard-library only.
 
+## Research idea backlog for Ian and external collaborators
+
+The [synthetic-only strategy research idea registry](docs/STRATEGY_RESEARCH_IDEAS.md) lists bounded hypotheses, missing fixture prerequisites, falsification controls, and evidence requirements. It is **not** a copy of private trading research or a record of tested alpha. Follow AGENTS.md and DATA_POLICY.md before experimenting.
+
 ## Human quickstart
 
 From the repository root, with **Python 3.11 or newer**:
