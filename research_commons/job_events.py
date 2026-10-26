@@ -48,13 +48,18 @@ class JobEvents:
                 if (p := json.loads(r["payload"]))["tenant"] == tenant]
 
     def _verify(self, db):
+        self.verify_ledger(db, self.jobs.registry)
+
+    @classmethod
+    def verify_ledger(cls, db, registry):
+        """Usable before controller startup/reconciliation, without an adapter."""
         streams = {}
         for row in db.execute("SELECT * FROM job_event_acks ORDER BY tenant,consumer,ordinal"):
             key = row["tenant"], row["consumer"]
-            if key[0] not in self.jobs.registry.budgets or key[1] not in CONSUMERS:
+            if key[0] not in registry.budgets or key[1] not in CONSUMERS:
                 raise MeterError("acknowledgment has unknown owner")
             if key not in streams:
-                streams[key] = [self._events(db, key[0]), 0, ZERO]
+                streams[key] = [cls._events(db, key[0]), 0, ZERO]
             events, count, previous = streams[key]
             try:
                 p = json.loads(row["payload"])
@@ -101,7 +106,7 @@ class JobEvents:
                                   (after != "start" and not HASH.fullmatch(after))):
             raise MeterError("invalid event cursor")
         with self.jobs._lock:
-            self.jobs.ledger.verify_audit()
+            self.jobs._verify_integrity()
             with self.jobs.ledger.transaction() as db:
                 self._verify(db)
                 events = self._events(db, tenant)
@@ -138,7 +143,7 @@ class JobEvents:
         if type(event_id) is not str or not HASH.fullmatch(event_id):
             raise MeterError("invalid event identity")
         with self.jobs._lock:
-            self.jobs.ledger.verify_audit()
+            self.jobs._verify_integrity()
             with self.jobs.ledger.transaction() as db:
                 self._verify(db)
                 events = self._events(db, tenant)
@@ -172,7 +177,7 @@ class JobEvents:
         if type(event_id) is not str or not HASH.fullmatch(event_id):
             raise MeterError("invalid event identity")
         with self.jobs._lock:
-            self.jobs.ledger.verify_audit()
+            self.jobs._verify_integrity()
             with self.jobs.ledger.transaction() as db:
                 self._verify(db)
                 for event in self._events(db, tenant):

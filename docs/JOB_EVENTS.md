@@ -64,7 +64,13 @@ It never creates a `REPORTED` acknowledgment, reruns an uncertain job, or charge
 Acknowledgments are an append-only projection in the same ledger file. Their
 hash chain binds tenant, fixed consumer, ordinal and canonical event. SQL
 triggers reject update/delete; startup and reads verify the chain against the
-job audit. Job quotas bound total growth. Low-storage acknowledgment rejection
+job audit. Combined job/ack verification runs before startup recovery, admission,
+worker launch and settlement, and the transition transaction checks retained ACKs
+before changing state. A detected mismatch latches the existing controller pause;
+reads cannot leave admission or execution enabled. Startup refuses contradictory
+evidence before expiring or reconciling jobs. Recovery requires independent
+operator reconciliation, never deleting receipts or treating ACKs as permissions.
+Job quotas bound total growth. Low-storage acknowledgment rejection
 does not lose events; an exact acknowledgment retry remains observable.
 Hashes provide local integrity checks, **not signatures or remote attestations**.
 Coordinated rollback of all state and a malicious filesystem owner remain
@@ -148,13 +154,24 @@ SIGKILL after acknowledgment commit, concurrent duplicate acknowledgments,
 lost responses, tenant isolation, transaction failure, one-sided history
 rollback, uncertain outcomes and result tampering.
 
-The new implementation has author validation, not an independent approval.
-No managed agent was found for this repository during the handoff inspection;
-unrelated portfolio and workstation-recovery sessions were not repurposed.
-Assign a safe existing reviewer with explicit ownership of this PR before
-considering a merge. Reviewers should inspect acknowledgment ordering and
-storage bounds, fail-closed startup, cursor isolation, manifest provenance and
-the absence of native dispatch. Source publication itself is already authorized.
+The initial handoff lacked an available reviewer. The owner subsequently
+authorized the exact research worktree's managed-session scope and a dedicated
+source reviewer; unrelated portfolio/recovery sessions were not repurposed.
+That reviewer independently ran 218 Python and 10 JavaScript tests on
+`b4b90ebe2f47bc749e4c5cfedcfeba93dbae9b24`, then reported **BLOCK**, with one P1
+finding and two failing additional regressions. Detected partial-history rollback
+did not fence the inherited controller: cancelled work could execute and charge
+fixture credits, and completed work could launch again. The original report is
+retained under SHA-256
+`655cde3870f6d59304a80de8bad5a885038a79101d7074714b0a6e9f4312f869`.
+
+The corrective increment moves ACK verification into the job authority's audit
+and transition boundaries, persists the existing pause on integrity refusal,
+checks active-worker boundaries and adds cancellation/completion rollback,
+pre-launch, post-result and startup regressions. Original source and failing
+evidence remain preserved. Independent review of the exact corrective head is
+required; consult [PR #20](https://github.com/wrightpt/open-market-research-lab/pull/20)
+for its canonical verdict and evidence hashes. Tests alone are not approval.
 
 Live integration evidence is intentionally incomplete. The synthetic lab
 connector reported its tunnel client unavailable. Runtime Bash inspection was
