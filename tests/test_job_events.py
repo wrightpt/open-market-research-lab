@@ -302,6 +302,25 @@ class EventHTTPTests(unittest.TestCase):
                                                     "native_dispatch": True})[0], 400)
         self.assertEqual(self.call("/v1/operator", method="GET")[0], 404)
 
+    def test_http_authorized_catalog_and_admission_do_not_submit(self):
+        status, catalog = self.call("/v1/catalog", method="GET")
+        self.assertEqual(status, 200)
+        self.assertEqual(catalog["datasets"][0]["source_kind"], "synthetic")
+        status, preview = self.call("/v1/admission", {"spec": spec()})
+        self.assertEqual(status, 200)
+        self.assertTrue(preview["admitted_now"])
+        self.assertFalse(preview["reservation_created"])
+        self.assertEqual(self.call("/v1/jobs", method="GET")[1]["jobs"], [])
+        self.assertEqual(self.call("/v1/admission", {"spec": spec(), "tenant": "demo-beta"})[0], 400)
+        self.assertEqual(self.call("/v1/admission", {"spec": spec()}, token="forged")[0], 401)
+
+    def test_http_sqlite_failure_returns_bounded_retryable_error(self):
+        with mock.patch.object(self.server.jobs.events, "acknowledge",
+                               side_effect=sqlite3.OperationalError("private storage detail")):
+            status, result = self.call("/v1/events/ack", {"consumer": "research-ui", "event_id": "f" * 64})
+        self.assertEqual(status, 503)
+        self.assertEqual(result, {"error": "storage_unavailable"})
+
 
 if __name__ == "__main__":
     unittest.main()

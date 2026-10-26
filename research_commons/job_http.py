@@ -1,13 +1,13 @@
 """Authenticated loopback test API. Never mount this fixture on a public service."""
 import json
 import re
+import sqlite3
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from market_lab.io import ROOT, LabError, _check_tree, _unique_pairs
 from .ledger import MeterError
 from .job_queue import JobService
-from .job_contract import catalog
 from .sandbox_identity import DevTokenIssuer, IdentityError
 
 JOB = re.compile(r"/v1/jobs/([a-f0-9]{32})(?:/(history|result|manifest|cancel))?\Z")
@@ -121,8 +121,7 @@ class JobHandler(BaseHTTPRequestHandler):
             principal = self.principal()
             jobs = self.server.jobs
             if self.path == "/v1/catalog":
-                jobs._allow(principal)
-                return self.send(200, catalog(jobs.root))
+                return self.send(200, jobs.authorized_catalog(principal))
             if self.path == "/v1/jobs":
                 return self.send(200, {"jobs": jobs.listing(principal)})
             if self.path == "/v1/credits":
@@ -137,7 +136,7 @@ class JobHandler(BaseHTTPRequestHandler):
             self.send(401, {"error": "invalid_fixture_identity"})
         except MeterError:
             self.send(404, {"error": "not_found_or_unavailable"})
-        except (LabError, OSError, ValueError):
+        except (LabError, OSError, ValueError, sqlite3.Error):
             self.send(503, {"error": "evidence_or_storage_unavailable"})
 
     def do_POST(self):
@@ -145,6 +144,8 @@ class JobHandler(BaseHTTPRequestHandler):
             principal = self.principal()
             body = self.body()
             jobs = self.server.jobs
+            if self.path == "/v1/admission" and set(body) == {"spec"}:
+                return self.send(200, jobs.preflight(principal, body["spec"]))
             if self.path == "/v1/events/read" and set(body) <= {"consumer", "after", "limit"} and "consumer" in body:
                 return self.send(200, jobs.events.read(principal, body["consumer"],
                                  after=body.get("after"), limit=body.get("limit", 16)))
@@ -164,5 +165,5 @@ class JobHandler(BaseHTTPRequestHandler):
             self.send(409, {"error": "admission_or_state_rejected"})
         except (LabError, ValueError, TypeError, RecursionError):
             self.send(400, {"error": "invalid_request"})
-        except OSError:
+        except (OSError, sqlite3.Error):
             self.send(503, {"error": "storage_unavailable"})

@@ -23,6 +23,22 @@ It does not contact another service or run the holdout.
 All routes retain the prototype's fixture Bearer authentication, literal loopback
 Host/origin checks, body/connection limits and tenant authorization.
 
+Before submission, `GET /v1/catalog` lists only the tenant's server-authorized
+synthetic development dataset and fixed configuration-only strategy. Revoked
+entitlement produces empty lists. Quant Market snapshots remain explicitly
+unadmitted; the request cannot supply a data URL, private source, holdout or
+caller-selected entitlement. `POST /v1/admission` with `{"spec": <job spec>}`
+validates the same contract and reports current budget/capacity/pause blockers,
+the server-owned fixture price and a versioned policy digest. It creates no
+reservation, job, event or charge and guarantees no future capacity. Actual
+submission rechecks the same limits under the existing controller lock and the
+ledger's atomic reservation. Exact existing submissions remain observable even
+when capacity is full. The policy retains one worker, eight global reservations,
+two per tenant and the existing finite budgets/timeouts. Only verified result
+settlement spends fixture credits; event reads, acknowledgments and preflight
+cannot spend them. SQLite failures return a bounded unavailable response without
+reflecting internal storage details.
+
 | Operation | Request | Result |
 |---|---|---|
 | `POST /v1/events/read` | `{"consumer":"research-ui","limit":16}` | Resume after this consumer's last durable acknowledgment |
@@ -146,3 +162,11 @@ denied by host policy; source-only contract inspection remained available.
 Neither condition was bypassed, and no repair/restart was attempted in another
 owner's service. A later integration owner must restore the existing authorized
 connector, admit the exact project and verify native contracts before activation.
+
+The follow-on admission increment passed 218 Python tests and 10 JavaScript
+tests plus the same nine reconnect checks. It adds tenant-filtered catalog and
+preflight routes, shared reservation checks, global eight-slot contention tests,
+entitlement revocation after preview, budget exhaustion, no-charge event replay
+and sanitized SQLite failures. The event-only source remains preserved at
+`4d9c05d4c270a858d55c36cf2c79f95eaca16325`; the admission change is a separate
+commit in draft PR #20. Independent review of the final head is still required.

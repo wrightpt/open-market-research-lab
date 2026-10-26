@@ -12,7 +12,8 @@ from market_lab.data import manifest
 from market_lab.io import (LabError, canonical_bytes, object_hash, read_bytes,
                            repo_path, write_new, _check_tree, _unique_pairs)
 from market_lab.research import EVIDENCE, provenance
-from .ledger import OfflineLedger, FixtureRegistry, MeterError, PRICES
+from .ledger import (OfflineLedger, FixtureRegistry, MeterError, PRICES,
+                     MAX_ACTIVE, MAX_OPERATIONS, RESERVATION_TTL)
 from .job_contract import (SKU, LIMITS, MAX_GLOBAL_ACTIVE, MAX_STATE_BYTES,
                            MIN_FREE_BYTES, validate_job, job_source_hash, catalog)
 
@@ -85,6 +86,58 @@ class JobService:
         self.ledger.verify_audit()
         return self.ledger.quote(principal, SKU, spec)
 
+    def authorized_catalog(self, principal):
+        """Server-owned choices; no caller-provided entitlement or source URL."""
+        tenant = self.registry.require(principal)
+        with self._lock:
+            self.ledger.verify_audit()
+            product = catalog(self.root)
+            allowed = product["dataset_id"] in self.entitlements.get(tenant, set())
+            return {"schema_version": 1, "evidence_level": "synthetic_engineering_only",
+                    "strategies": [{"id": product["strategy"], "sku": SKU,
+                                    "configuration_only": True}] if allowed else [],
+                    "datasets": [{"id": product["dataset_id"], "split": "development",
+                                  "sha256": product["dataset_sha256"], "source_kind": "synthetic",
+                                  "provider": "open-market-research-lab"}] if allowed else [],
+                    "external_sources": {"quant-market-api": "requires_approved_snapshot_admission"},
+                    "native_dispatch": False, "real_payments": False}
+
+    @staticmethod
+    def admission_policy():
+        value = {"schema_version": 1, "global_worker_slots": 1,
+                 "global_active_limit": MAX_GLOBAL_ACTIVE, "tenant_active_limit": MAX_ACTIVE,
+                 "tenant_lifetime_jobs": MAX_OPERATIONS, "reservation_ttl_seconds": RESERVATION_TTL,
+                 "resource_maxima": dict(LIMITS), "price_cents": PRICES["synthetic_backtest.v1"],
+                 "currency_kind": "fixture_credit_only", "charge_trigger": "verified_result_settlement",
+                 "uncertain_execution": "pause_without_replay_or_charge", "native_dispatch": False}
+        return {"policy": value, "policy_sha256": object_hash(value)}
+
+    def _admission_blockers(self, principal, price):
+        balance = self.ledger.balance(principal)
+        blockers = []
+        if self.health()["paused"] or self._stop.is_set():
+            blockers.append("job_admission_paused")
+        if balance["active"] >= MAX_ACTIVE:
+            blockers.append("tenant_active_limit")
+        if balance["operations"] >= MAX_OPERATIONS:
+            blockers.append("tenant_lifetime_limit")
+        if balance["available_cents"] < price:
+            blockers.append("insufficient_simulated_budget")
+        try:
+            self._storage_admission()
+        except MeterError:
+            blockers.append("aggregate_resource_or_storage_admission_exhausted")
+        return blockers
+
+    def preflight(self, principal, spec):
+        """Advisory snapshot only. Submission always rechecks atomic authority."""
+        with self._lock:
+            quote = self.quote(principal, spec)
+            blockers = self._admission_blockers(principal, quote["price_cents"])
+            return {"schema_version": 1, "admitted_now": not blockers, "blockers": blockers,
+                    "quote": quote, **self.admission_policy(), "reservation_created": False,
+                    "guarantees_future_capacity": False}
+
     def _storage_admission(self):
         state = repo_path(self.root, self.directory, output=True)
         used = 0
@@ -112,9 +165,10 @@ class JobService:
             # An exact retry must remain observable even when admission is paused/full.
             if prior:
                 return self._view(self.ledger.reserve(principal, key, SKU, spec))
-            if self.health()["paused"] or self._stop.is_set():
-                raise MeterError("job admission paused")
-            self._storage_admission()
+            quote = self.quote(principal, spec)
+            blockers = self._admission_blockers(principal, quote["price_cents"])
+            if blockers:
+                raise MeterError("job admission rejected: " + ",".join(blockers))
             receipt = self.ledger.reserve(principal, key, SKU, spec)
             self._wake.set()
             return self._view(receipt)
