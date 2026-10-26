@@ -27,6 +27,13 @@ def provenance(root, submission, metadata, split):
 
 
 def build_report(root, submission, metadata, split, bars):
+    return build_report_from_inputs(
+        submission, bars, provenance(root, submission, metadata, split)
+    )
+
+
+def build_report_from_inputs(submission, bars, frozen_provenance):
+    """Pure computation after a trusted caller validates and freezes input bytes."""
     parameters = submission["strategy"]["parameters"]
     lookback = parameters["lookback_bars"]
     features = causal_features(bars, lookback)
@@ -42,7 +49,7 @@ def build_report(root, submission, metadata, split, bars):
             "Synthetic accounting and alert mechanics only; "
             "no market predictability or profit claim."
         ),
-        "provenance": provenance(root, submission, metadata, split),
+        "provenance": frozen_provenance,
         "submission": submission, "bars": len(bars),
         "summary": simulation["summary"], "controls": controls,
         "alert_evaluation": evaluate_alerts(bars, decisions, lookback, submission["evaluation"]),

@@ -6,6 +6,7 @@ import json
 import re
 import secrets
 import sqlite3
+import threading
 import time
 import uuid
 from contextlib import contextmanager
@@ -94,6 +95,7 @@ class OfflineLedger:
         self.registry = registry
         self.clock = clock if clock is not None else time.time
         self.directory = directory
+        self._lifecycle = threading.RLock()
         self.db_path = repo_path(self.root, f"{directory}/ledger.sqlite3", output=True)
         lock = repo_path(self.root, f"{directory}/writer.lock", output=True)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -108,9 +110,10 @@ class OfflineLedger:
             raise
 
     def close(self):
-        if not self._lock.closed:
-            fcntl.flock(self._lock, fcntl.LOCK_UN)
-            self._lock.close()
+        with self._lifecycle:
+            if not self._lock.closed:
+                fcntl.flock(self._lock, fcntl.LOCK_UN)
+                self._lock.close()
 
     def __enter__(self):
         return self
@@ -120,19 +123,22 @@ class OfflineLedger:
 
     @contextmanager
     def transaction(self):
-        db = sqlite3.connect(self.db_path, isolation_level=None, timeout=5)
-        db.row_factory = sqlite3.Row
-        try:
-            db.execute("PRAGMA foreign_keys=ON")
-            db.execute("PRAGMA synchronous=FULL")
-            db.execute("BEGIN IMMEDIATE")
-            yield db
-            db.commit()
-        except BaseException:
-            db.rollback()
-            raise
-        finally:
-            db.close()
+        with self._lifecycle:
+            if self._lock.closed:
+                raise MeterError("ledger authority has been closed")
+            db = sqlite3.connect(self.db_path, isolation_level=None, timeout=5)
+            db.row_factory = sqlite3.Row
+            try:
+                db.execute("PRAGMA foreign_keys=ON")
+                db.execute("PRAGMA synchronous=FULL")
+                db.execute("BEGIN IMMEDIATE")
+                yield db
+                db.commit()
+            except BaseException:
+                db.rollback()
+                raise
+            finally:
+                db.close()
 
     def _initialize(self):
         statements = (
@@ -174,6 +180,10 @@ class OfflineLedger:
             "price_cents": row["price_cents"], "state": row["state"],
             "source_hash": row["source_hash"], "manifest_hash": row["manifest_hash"],
             "result_hash": row["result_hash"], "reason": reason,
+            "params_sha256": object_hash(json.loads(row["params"])),
+            "key_sha256": object_hash(row["request_key"]),
+            "result_json_sha256": object_hash(row["result_json"]),
+            "created": row["created"], "expires": row["expires"],
             "at_ms": int(self.clock() * 1000),
         }
         last = db.execute("SELECT event_hash FROM events ORDER BY seq DESC LIMIT 1").fetchone()
@@ -184,6 +194,10 @@ class OfflineLedger:
 
     def verify_audit(self):
         with self.transaction() as db:
+            budgets = {row["tenant_id"]: row["budget_cents"]
+                       for row in db.execute("SELECT * FROM tenants")}
+            if budgets != self.registry.budgets:
+                raise MeterError("ledger budgets differ from authorized fixture registry")
             previous = "0" * 64
             projected = {}
             for entry in db.execute("SELECT * FROM events ORDER BY seq"):
@@ -205,10 +219,21 @@ class OfflineLedger:
                           ("sku", "sku"), ("price_cents", "price_cents"),
                           ("state", "state"), ("result_hash", "result_hash"),
                           ("source_hash", "source_hash"),
-                          ("manifest_hash", "manifest_hash"))
+                          ("manifest_hash", "manifest_hash"),
+                          ("reason", "failure"),
+                          ("created", "created"), ("expires", "expires"))
                 if any(recorded[key] != row[column] for key, column in fields
                        if key in recorded):
                     raise MeterError("ledger receipt differs from audit")
+                if self._hash(row["sku"], json.loads(row["params"])) != row["request_hash"]:
+                    raise MeterError("ledger request differs from audit")
+                for key, value in (
+                    ("params_sha256", json.loads(row["params"])),
+                    ("key_sha256", row["request_key"]),
+                    ("result_json_sha256", row["result_json"]),
+                ):
+                    if key in recorded and recorded[key] != object_hash(value):
+                        raise MeterError("ledger payload differs from audit")
         return True
 
     @staticmethod
@@ -241,10 +266,10 @@ class OfflineLedger:
         record = db.execute("""
             SELECT t.budget_cents,
             COALESCE(SUM(CASE WHEN o.state='settled' THEN o.price_cents ELSE 0 END),0) spent,
-            COALESCE(SUM(CASE WHEN o.state IN ('reserved','executing')
+            COALESCE(SUM(CASE WHEN o.state IN ('reserved','executing','cancel_requested')
                            THEN o.price_cents ELSE 0 END),0) held,
             COUNT(o.id) used,
-            COALESCE(SUM(CASE WHEN o.state IN ('reserved','executing') THEN 1 ELSE 0 END),0) active
+            COALESCE(SUM(CASE WHEN o.state IN ('reserved','executing','cancel_requested') THEN 1 ELSE 0 END),0) active
             FROM tenants t LEFT JOIN operations o ON o.tenant_id=t.tenant_id
             WHERE t.tenant_id=? GROUP BY t.tenant_id
         """, (tenant,)).fetchone()
@@ -272,7 +297,7 @@ class OfflineLedger:
 
     def quote(self, principal, sku, params):
         tenant = self.registry.require(principal)
-        price = validated(sku, params)
+        price = self._validated(sku, params)
         source, manifest_sha = self._identity()
         with self.transaction() as db:
             available = self._balance(db, tenant)["available_cents"]
@@ -303,7 +328,8 @@ class OfflineLedger:
     def _transition(self, db, row, new, reason=None, *, result=None, digest=None):
         allowed = {
             "reserved": {"executing", "cancelled", "expired"},
-            "executing": {"settled", "failed", "uncertain"},
+            "executing": {"settled", "failed", "uncertain", "cancel_requested"},
+            "cancel_requested": {"cancelled", "uncertain"},
             "settled": {"refunded"},
         }
         if new not in allowed.get(row["state"], set()):
@@ -322,7 +348,7 @@ class OfflineLedger:
         tenant = self.registry.require(principal)
         if type(key) is not str or not KEY.fullmatch(key):
             raise MeterError("invalid 8-100 character idempotency key")
-        price = validated(sku, params)
+        price = self._validated(sku, params)
         request_hash = self._hash(sku, params)
         with self.transaction() as db:
             prior = db.execute(
@@ -368,6 +394,9 @@ class OfflineLedger:
                 return self._transition(db, row, "cancelled", "source_drift"), False
             return self._transition(db, row, "executing"), True
 
+    def _validated(self, sku, params):
+        return validated(sku, params)
+
     def finish(self, principal, operation_id, state, *, reason=None, result=None, digest=None):
         if state not in {"settled", "failed", "cancelled", "refunded"}:
             raise MeterError("disallowed public finish state")
@@ -392,9 +421,9 @@ class OfflineLedger:
         """On startup, never replay in-flight side effects or charge uncertain work."""
         with self.transaction() as db:
             active = db.execute(
-                "SELECT * FROM operations WHERE state IN ('executing','reserved')").fetchall()
+                "SELECT * FROM operations WHERE state IN ('executing','reserved','cancel_requested')").fetchall()
             for row in active:
-                if row["state"] == "executing":
+                if row["state"] in {"executing", "cancel_requested"}:
                     self._transition(db, row, "uncertain", "interrupted_after_claim")
                 elif row["expires"] <= self.clock():
                     self._transition(db, row, "expired", "reservation_ttl")
