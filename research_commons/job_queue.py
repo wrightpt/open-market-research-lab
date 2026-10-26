@@ -67,6 +67,8 @@ class JobService:
                 for receipt in self.listing(principal):
                     if receipt["state"] in {"settled", "refunded"}:
                         self.result(principal, receipt["id"])
+            from .job_events import JobEvents
+            self.events = JobEvents(self)
         except BaseException:
             self.ledger.close()
             raise
@@ -169,6 +171,43 @@ class JobService:
                     receipt = self.ledger._receipt(row)
             self._wake.set()
             return self._view(receipt)
+
+    def result_manifest(self, principal, job_id):
+        """Stable evidence projection; never mint a completion or charge."""
+        with self._lock:
+            report = self.result(principal, job_id)
+            receipt = self.get(principal, job_id)
+            tenant = self.registry.require(principal)
+            with self.ledger.transaction() as db:
+                spec = json.loads(self.ledger._row(db, tenant, job_id)["params"])
+            execution = receipt["result"]
+            value = {"schema_version": 1, "job_id": job_id,
+                     "evidence_level": "synthetic_engineering_only",
+                     "input_sha256": object_hash(spec), "request_sha256": receipt["request_sha256"],
+                     "code_revision": {"kind": "content_sha256", "value": receipt["source_sha256"]},
+                     "model_revision": None, "model_note": "fixed_strategy_no_model",
+                     "dataset_manifest_sha256": receipt["manifest_sha256"],
+                     "provenance": report["provenance"],
+                     "result_sha256": receipt["evidence_sha256"],
+                     "execution_evidence_sha256": object_hash(execution),
+                     "requested_resources": spec["resources"],
+                     "observed_resources": {k: execution[k] for k in
+                                            ("cpu_seconds", "max_rss_kib", "wall_seconds")},
+                     "enforcement": execution["enforcement"],
+                     "replay_kind": execution["replay_kind"]}
+            return {"manifest": value, "manifest_sha256": object_hash(value)}
+
+    def operator_snapshot(self):
+        """Trusted in-process API only; never exposed by a tenant HTTP route."""
+        with self._lock:
+            self.ledger.verify_audit()
+            with self.ledger.transaction() as db:
+                self.events._verify(db)
+                blockers = [{"job_id": r["id"], "reason": r["failure"],
+                             "required_action": "independent_execution_reconciliation"}
+                            for r in db.execute("SELECT id,failure FROM operations WHERE state='uncertain'")]
+            return {**self.health(), "blockers": blockers, "native_dispatch": False,
+                    "task_authority": "unchanged"}
 
     def refund(self, principal, job_id):
         with self._lock:

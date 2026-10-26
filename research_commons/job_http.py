@@ -10,7 +10,7 @@ from .job_queue import JobService
 from .job_contract import catalog
 from .sandbox_identity import DevTokenIssuer, IdentityError
 
-JOB = re.compile(r"/v1/jobs/([a-f0-9]{32})(?:/(history|result|cancel))?\Z")
+JOB = re.compile(r"/v1/jobs/([a-f0-9]{32})(?:/(history|result|manifest|cancel))?\Z")
 
 
 class JobHTTPServer(ThreadingHTTPServer):
@@ -130,7 +130,8 @@ class JobHandler(BaseHTTPRequestHandler):
             match = JOB.fullmatch(self.path)
             if not match or match[2] == "cancel":
                 return self.send(404, {"error": "not_found"})
-            operation = {None: jobs.get, "history": jobs.history, "result": jobs.result}[match[2]]
+            operation = {None: jobs.get, "history": jobs.history, "result": jobs.result,
+                         "manifest": jobs.result_manifest}[match[2]]
             return self.send(200, operation(principal, match[1]))
         except IdentityError:
             self.send(401, {"error": "invalid_fixture_identity"})
@@ -144,6 +145,11 @@ class JobHandler(BaseHTTPRequestHandler):
             principal = self.principal()
             body = self.body()
             jobs = self.server.jobs
+            if self.path == "/v1/events/read" and set(body) <= {"consumer", "after", "limit"} and "consumer" in body:
+                return self.send(200, jobs.events.read(principal, body["consumer"],
+                                 after=body.get("after"), limit=body.get("limit", 16)))
+            if self.path == "/v1/events/ack" and set(body) == {"consumer", "event_id"}:
+                return self.send(200, jobs.events.acknowledge(principal, body["consumer"], body["event_id"]))
             if self.path == "/v1/quote" and set(body) == {"spec"}:
                 return self.send(200, jobs.quote(principal, body["spec"]))
             if self.path == "/v1/jobs" and set(body) == {"key", "spec"}:

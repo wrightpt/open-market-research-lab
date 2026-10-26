@@ -34,7 +34,7 @@ def validate_job(root, params):
 def job_source_hash(root):
     entries = {"engine": source_hash(root)}
     for name in ("__init__", "ledger", "job_contract", "job_queue", "job_worker", "job_limits", "job_http",
-                 "sandbox_identity"):
+                 "sandbox_identity", "job_events", "job_handoff"):
         entries[name] = digest(read_bytes(root / "research_commons" / (name + ".py"), 256000))
     entries["schema"] = digest(read_bytes(root / "schemas" / "job.schema.json", 256000))
     return object_hash(entries)
