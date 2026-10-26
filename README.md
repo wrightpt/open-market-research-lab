@@ -77,6 +77,20 @@ See [OIDC and official x402 integration evidence](docs/OIDC_OFFICIAL_X402_LAB.md
 These commands require explicit development-only dependencies and are not part
 of the default benchmark/CI, public hosting or production release.
 
+## Bounded synthetic research jobs
+
+A separate, finite loopback demonstration queues configuration-only strategy jobs
+for two synthetic tenants using the existing credit ledger and benchmark engine.
+It preserves idempotency, cancellation, result hashes and uncertain outcomes across
+restarts. On Linux it requires the system `libseccomp.so.2`; missing enforcement
+fails closed. This is source-only engineering evidence, with no hosted service or
+real funds.
+
+    python3 -m research_commons.job_demo --state-dir artifacts/research-jobs-demo-001
+
+Read [the job API, limits and operator runbook](docs/JOB_EXECUTION.md) before use.
+The demo shuts down every server and worker when it finishes.
+
 ## Developer portal preview
 
 ```bash
