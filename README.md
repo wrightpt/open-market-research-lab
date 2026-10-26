@@ -91,6 +91,12 @@ real funds.
 Read [the job API, limits and operator runbook](docs/JOB_EXECUTION.md) before use.
 The demo shuts down every server and worker when it finishes.
 
+The incremental [resumable event API](docs/JOB_EVENTS.md) adds durable consumer
+acknowledgments, result manifests and disabled authority-handoff previews. Its
+finite reconnect demo uses the same ledger and one original job:
+
+    python3 -m research_commons.job_event_demo --state-dir artifacts/event-demo-001
+
 ## Developer portal preview
 
 ```bash

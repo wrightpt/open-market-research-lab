@@ -3,6 +3,7 @@ import json
 import os
 import selectors
 import shutil
+import sqlite3
 import subprocess
 import sys
 import threading
@@ -12,12 +13,35 @@ from market_lab.data import manifest
 from market_lab.io import (LabError, canonical_bytes, object_hash, read_bytes,
                            repo_path, write_new, _check_tree, _unique_pairs)
 from market_lab.research import EVIDENCE, provenance
-from .ledger import OfflineLedger, FixtureRegistry, MeterError, PRICES
+from .ledger import (OfflineLedger, FixtureRegistry, MeterError, PRICES,
+                     MAX_ACTIVE, MAX_OPERATIONS, RESERVATION_TTL)
 from .job_contract import (SKU, LIMITS, MAX_GLOBAL_ACTIVE, MAX_STATE_BYTES,
                            MIN_FREE_BYTES, validate_job, job_source_hash, catalog)
 
 
 class JobLedger(OfflineLedger):
+    def _verify_acknowledgments(self, db):
+        # A fresh/pre-event ledger has no ACK projection yet. Retained ACKs
+        # must agree BEFORE OfflineLedger performs startup reconciliation.
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' "
+                      "AND name='job_event_acks'").fetchone():
+            from .job_events import JobEvents
+            JobEvents.verify_ledger(db, self.registry)
+
+    def verify_audit(self):
+        with self._lifecycle:
+            super().verify_audit()
+            with self.transaction() as db:
+                self._verify_acknowledgments(db)
+        return True
+
+    def _transition(self, db, row, new, reason=None, *, result=None, digest=None):
+        # Check retained observations in the SAME transaction as each claim,
+        # expiry, cancellation, reconciliation or settlement. ACKs never grant
+        # execution; contradictory evidence vetoes a state transition.
+        self._verify_acknowledgments(db)
+        return super()._transition(db, row, new, reason, result=result, digest=digest)
+
     def balance(self, principal):
         self.verify_audit()
         return super().balance(principal)
@@ -67,6 +91,8 @@ class JobService:
                 for receipt in self.listing(principal):
                     if receipt["state"] in {"settled", "refunded"}:
                         self.result(principal, receipt["id"])
+            from .job_events import JobEvents
+            self.events = JobEvents(self)
         except BaseException:
             self.ledger.close()
             raise
@@ -78,10 +104,76 @@ class JobService:
             raise MeterError("dataset is not entitled")
         return tenant
 
+    def _verify_integrity(self):
+        """Latch failure across clients and persist the existing controller pause."""
+        try:
+            self.ledger.verify_audit()
+        except (MeterError, sqlite3.Error):
+            self._fatal = "evidence_integrity_failed_preserve_state"
+            try:
+                self.pause()
+            except (MeterError, sqlite3.Error):
+                # Broken storage may prevent the pause write. In-memory fatal
+                # state still fences work; startup re-verifies before recovery.
+                pass
+            raise
+
     def quote(self, principal, spec):
         self._allow(principal)
-        self.ledger.verify_audit()
+        self._verify_integrity()
         return self.ledger.quote(principal, SKU, spec)
+
+    def authorized_catalog(self, principal):
+        """Server-owned choices; no caller-provided entitlement or source URL."""
+        tenant = self.registry.require(principal)
+        with self._lock:
+            self._verify_integrity()
+            product = catalog(self.root)
+            allowed = product["dataset_id"] in self.entitlements.get(tenant, set())
+            return {"schema_version": 1, "evidence_level": "synthetic_engineering_only",
+                    "strategies": [{"id": product["strategy"], "sku": SKU,
+                                    "configuration_only": True}] if allowed else [],
+                    "datasets": [{"id": product["dataset_id"], "split": "development",
+                                  "sha256": product["dataset_sha256"], "source_kind": "synthetic",
+                                  "provider": "open-market-research-lab"}] if allowed else [],
+                    "external_sources": {"quant-market-api": "requires_approved_snapshot_admission"},
+                    "native_dispatch": False, "real_payments": False}
+
+    @staticmethod
+    def admission_policy():
+        value = {"schema_version": 1, "global_worker_slots": 1,
+                 "global_active_limit": MAX_GLOBAL_ACTIVE, "tenant_active_limit": MAX_ACTIVE,
+                 "tenant_lifetime_jobs": MAX_OPERATIONS, "reservation_ttl_seconds": RESERVATION_TTL,
+                 "resource_maxima": dict(LIMITS), "price_cents": PRICES["synthetic_backtest.v1"],
+                 "currency_kind": "fixture_credit_only", "charge_trigger": "verified_result_settlement",
+                 "uncertain_execution": "pause_without_replay_or_charge", "native_dispatch": False}
+        return {"policy": value, "policy_sha256": object_hash(value)}
+
+    def _admission_blockers(self, principal, price):
+        balance = self.ledger.balance(principal)
+        blockers = []
+        if self.health()["paused"] or self._stop.is_set():
+            blockers.append("job_admission_paused")
+        if balance["active"] >= MAX_ACTIVE:
+            blockers.append("tenant_active_limit")
+        if balance["operations"] >= MAX_OPERATIONS:
+            blockers.append("tenant_lifetime_limit")
+        if balance["available_cents"] < price:
+            blockers.append("insufficient_simulated_budget")
+        try:
+            self._storage_admission()
+        except MeterError:
+            blockers.append("aggregate_resource_or_storage_admission_exhausted")
+        return blockers
+
+    def preflight(self, principal, spec):
+        """Advisory snapshot only. Submission always rechecks atomic authority."""
+        with self._lock:
+            quote = self.quote(principal, spec)
+            blockers = self._admission_blockers(principal, quote["price_cents"])
+            return {"schema_version": 1, "admitted_now": not blockers, "blockers": blockers,
+                    "quote": quote, **self.admission_policy(), "reservation_created": False,
+                    "guarantees_future_capacity": False}
 
     def _storage_admission(self):
         state = repo_path(self.root, self.directory, output=True)
@@ -103,16 +195,17 @@ class JobService:
     def submit(self, principal, key, spec):
         with self._lock:
             tenant = self._allow(principal)
-            self.ledger.verify_audit()
+            self._verify_integrity()
             with self.ledger.transaction() as db:
                 prior = db.execute("SELECT id FROM operations WHERE tenant_id=? AND request_key=?",
                                    (tenant, key)).fetchone()
             # An exact retry must remain observable even when admission is paused/full.
             if prior:
                 return self._view(self.ledger.reserve(principal, key, SKU, spec))
-            if self.health()["paused"] or self._stop.is_set():
-                raise MeterError("job admission paused")
-            self._storage_admission()
+            quote = self.quote(principal, spec)
+            blockers = self._admission_blockers(principal, quote["price_cents"])
+            if blockers:
+                raise MeterError("job admission rejected: " + ",".join(blockers))
             receipt = self.ledger.reserve(principal, key, SKU, spec)
             self._wake.set()
             return self._view(receipt)
@@ -126,12 +219,12 @@ class JobService:
 
     def get(self, principal, job_id):
         with self._lock:
-            self.ledger.verify_audit()
+            self._verify_integrity()
             return self._view(self.ledger.get(principal, job_id))
 
     def listing(self, principal):
         tenant = self.registry.require(principal)
-        self.ledger.verify_audit()
+        self._verify_integrity()
         with self._lock, self.ledger.transaction() as db:
             rows = db.execute("SELECT * FROM operations WHERE tenant_id=? ORDER BY created,id LIMIT 64",
                               (tenant,)).fetchall()
@@ -139,7 +232,7 @@ class JobService:
 
     def history(self, principal, job_id):
         with self._lock:
-            self.ledger.verify_audit()
+            self._verify_integrity()
             return self.ledger.events(principal, job_id)
 
     def result(self, principal, job_id):
@@ -158,7 +251,7 @@ class JobService:
     def cancel(self, principal, job_id):
         tenant = self.registry.require(principal)
         with self._lock:
-            self.ledger.verify_audit()
+            self._verify_integrity()
             with self.ledger.transaction() as db:
                 row = self.ledger._row(db, tenant, job_id)
                 if row["state"] == "reserved":
@@ -170,9 +263,46 @@ class JobService:
             self._wake.set()
             return self._view(receipt)
 
+    def result_manifest(self, principal, job_id):
+        """Stable evidence projection; never mint a completion or charge."""
+        with self._lock:
+            report = self.result(principal, job_id)
+            receipt = self.get(principal, job_id)
+            tenant = self.registry.require(principal)
+            with self.ledger.transaction() as db:
+                spec = json.loads(self.ledger._row(db, tenant, job_id)["params"])
+            execution = receipt["result"]
+            value = {"schema_version": 1, "job_id": job_id,
+                     "evidence_level": "synthetic_engineering_only",
+                     "input_sha256": object_hash(spec), "request_sha256": receipt["request_sha256"],
+                     "code_revision": {"kind": "content_sha256", "value": receipt["source_sha256"]},
+                     "model_revision": None, "model_note": "fixed_strategy_no_model",
+                     "dataset_manifest_sha256": receipt["manifest_sha256"],
+                     "provenance": report["provenance"],
+                     "result_sha256": receipt["evidence_sha256"],
+                     "execution_evidence_sha256": object_hash(execution),
+                     "requested_resources": spec["resources"],
+                     "observed_resources": {k: execution[k] for k in
+                                            ("cpu_seconds", "max_rss_kib", "wall_seconds")},
+                     "enforcement": execution["enforcement"],
+                     "replay_kind": execution["replay_kind"]}
+            return {"manifest": value, "manifest_sha256": object_hash(value)}
+
+    def operator_snapshot(self):
+        """Trusted in-process API only; never exposed by a tenant HTTP route."""
+        with self._lock:
+            self._verify_integrity()
+            with self.ledger.transaction() as db:
+                self.events._verify(db)
+                blockers = [{"job_id": r["id"], "reason": r["failure"],
+                             "required_action": "independent_execution_reconciliation"}
+                            for r in db.execute("SELECT id,failure FROM operations WHERE state='uncertain'")]
+            return {**self.health(), "blockers": blockers, "native_dispatch": False,
+                    "task_authority": "unchanged"}
+
     def refund(self, principal, job_id):
         with self._lock:
-            self.ledger.verify_audit()
+            self._verify_integrity()
             return self._view(self.ledger.finish(principal, job_id, "refunded", reason="synthetic_refund"))
 
     def health(self):
@@ -188,6 +318,8 @@ class JobService:
             db.execute("UPDATE job_control SET paused=1 WHERE id=1")
 
     def resume(self):
+        with self._lock:
+            self._verify_integrity()
         with self._lock, self.ledger.transaction() as db:
             if self._fatal or db.execute("SELECT 1 FROM operations WHERE state='uncertain'").fetchone():
                 raise MeterError("uncertain execution requires evidence-backed operator reconciliation")
@@ -196,7 +328,7 @@ class JobService:
 
     def _next(self):
         with self._lock:
-            self.ledger.verify_audit()
+            self._verify_integrity()
             self.ledger.expire()
             if self.health()["paused"] or self._stop.is_set():
                 return None
@@ -251,6 +383,8 @@ class JobService:
         reason = None
         began = time.monotonic()
         try:
+            with self._lock:
+                self._verify_integrity()
             process = subprocess.Popen(self._command(), stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                        stderr=subprocess.DEVNULL, close_fds=True, start_new_session=True,
                                        cwd=self.root, env={"LC_ALL": "C.UTF-8"})
@@ -263,6 +397,7 @@ class JobService:
                 eof = False
                 while True:
                     with self._lock:
+                        self._verify_integrity()
                         state = self.ledger.get(principal, row["id"])["state"]
                     if state == "cancel_requested" or self._stop.is_set():
                         reason = "cancelled_after_worker_stop"
@@ -318,6 +453,7 @@ class JobService:
                 if process.stdout:
                     process.stdout.close()
         with self._lock:
+            self._verify_integrity()
             state = self.ledger.get(principal, row["id"])["state"]
             if state == "cancel_requested" or self._stop.is_set():
                 if state == "executing":
